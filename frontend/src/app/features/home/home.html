@@ -1,1 +1,119 @@
-<p>home works!</p>
+<p-drawer [(visible)]="menuAberto" position="left" styleClass="app-drawer">
+  <div class="drawer-content">
+    <div class="drawer-brand">
+      <div class="brand-icon">P</div>
+      <div>
+        <strong>Peony Beauty</strong>
+        <span>Agenda de atendimentos</span>
+      </div>
+    </div>
+
+    <nav class="drawer-nav">
+      <button type="button" class="drawer-item active" (click)="fecharMenu()">
+        <i class="pi pi-home"></i>
+        <span>Início</span>
+      </button>
+
+      <button type="button" class="drawer-item" (click)="fecharMenu()">
+        <i class="pi pi-calendar-plus"></i>
+        <span>Novo agendamento</span>
+      </button>
+
+      <button type="button" class="drawer-item" (click)="fecharMenu()">
+        <i class="pi pi-users"></i>
+        <span>Clientes</span>
+      </button>
+
+      <button type="button" class="drawer-item" (click)="fecharMenu()">
+        <i class="pi pi-sparkles"></i>
+        <span>Serviços</span>
+      </button>
+    </nav>
+  </div>
+</p-drawer>
+
+<main class="home-page">
+  <header class="toolbar">
+    <button type="button" class="icon-button menu-button" aria-label="Abrir menu" (click)="abrirMenu()">
+      <i class="pi pi-bars"></i>
+    </button>
+
+    <button type="button" class="icon-button notification-button" aria-label="Notificações">
+      <i class="pi pi-bell"></i>
+      <span class="notification-badge">3</span>
+    </button>
+  </header>
+
+  <section class="welcome-section">
+    <p class="eyebrow">Agenda do salão</p>
+    <h1>Bom dia, Nails! <span>🌸</span></h1>
+    <p>{{ dataAtual }}</p>
+  </section>
+
+  <section class="shortcut-grid" aria-label="Ações principais">
+    @for (atalho of atalhos; track atalho.id) {
+      <button type="button" class="shortcut-card" (click)="selecionarAtalho(atalho.id)">
+        <span class="shortcut-icon">
+          <i [class]="atalho.icone"></i>
+        </span>
+        <strong>{{ atalho.titulo }}</strong>
+      </button>
+    }
+  </section>
+
+  <section class="appointments-section">
+    <div class="section-header">
+      <h2>Hoje</h2>
+      <button type="button" class="see-all-button">
+        Ver todos
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="appointments-list">
+      @for (agendamento of agendamentosHoje; track agendamento.id) {
+        <article class="appointment-card">
+          <div class="appointment-time">{{ agendamento.hora }}</div>
+
+          <div class="appointment-content">
+            <div class="client-avatar">{{ agendamento.iniciais }}</div>
+
+            <div class="appointment-info">
+              <strong>{{ agendamento.cliente }}</strong>
+              <span>
+                <i class="pi pi-sparkles"></i>
+                {{ agendamento.servico }}
+              </span>
+            </div>
+
+            <div class="appointment-actions">
+              <span class="status-pill">{{ agendamento.status }}</span>
+              <button type="button" class="details-button" aria-label="Ver detalhes">
+                <i class="pi pi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="daily-message">
+    <div class="daily-icon">
+      <i class="pi pi-heart-fill"></i>
+    </div>
+
+    <div>
+      <strong>Seu dia está incrível</strong>
+      <p>boas energias atraem clientes incríveis! 💗</p>
+    </div>
+
+    <button type="button" class="more-button" aria-label="Mais opções">
+      <i class="pi pi-ellipsis-v"></i>
+    </button>
+  </section>
+
+  <button type="button" class="floating-button" aria-label="Novo agendamento">
+    <i class="pi pi-calendar-plus"></i>
+  </button>
+</main>

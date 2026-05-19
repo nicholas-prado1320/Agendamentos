@@ -1,0 +1,419 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  font-family: Inter, Arial, sans-serif;
+  color: #573425;
+  background: radial-gradient(circle at top, #fff4ef 0, #fffaf7 42%, #fff3ee 100%);
+}
+.home-page {
+  position: relative;
+  width: min(100%, 520px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 6.5rem;
+  overflow: hidden;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.25rem;
+}
+.icon-button {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 1.1rem;
+  color: #bf7150;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+.icon-button:active,
+.shortcut-card:active,
+.floating-button:active {
+  transform: scale(0.96);
+}
+.menu-button i {
+  font-size: 1.85rem;
+}
+.notification-button {
+  color: #b96a49;
+  background: rgba(255, 243, 238, 0.78);
+  box-shadow: 0 10px 28px rgba(166, 110, 82, 0.12);
+}
+.notification-button i {
+  font-size: 1.55rem;
+}
+.notification-badge {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #ef8588;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.welcome-section {
+  margin-bottom: 1.85rem;
+}
+.eyebrow {
+  width: fit-content;
+  margin: 0 0 0.55rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  color: #bf7150;
+  background: rgba(255, 226, 220, 0.68);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.welcome-section h1 {
+  margin: 0 0 0.45rem;
+  color: #4d2f22;
+  font-size: clamp(2rem, 8vw, 2.65rem);
+  line-height: 1.05;
+  letter-spacing: -0.05rem;
+}
+.welcome-section p:not(.eyebrow) {
+  margin: 0;
+  color: #735345;
+  font-size: 1.16rem;
+}
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.35rem;
+}
+.shortcut-card {
+  min-height: 8.7rem;
+  padding: 1.1rem 0.65rem;
+  border: 1px solid rgba(196, 126, 93, 0.12);
+  border-radius: 1.45rem;
+  color: #5b3526;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 38px rgba(166, 110, 82, 0.16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.shortcut-card:hover {
+  box-shadow: 0 22px 42px rgba(166, 110, 82, 0.2);
+}
+.shortcut-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  color: #ef8588;
+  background: linear-gradient(135deg, #ffe7e5, #fff1ee);
+  display: grid;
+  place-items: center;
+}
+.shortcut-icon i {
+  font-size: 1.75rem;
+}
+.shortcut-card strong {
+  font-size: 1rem;
+  line-height: 1.2;
+  text-align: center;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.section-header h2 {
+  margin: 0;
+  color: #6a3e2c;
+  font-size: 2rem;
+  letter-spacing: -0.03rem;
+}
+.see-all-button {
+  height: 3rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  color: #7b422e;
+  background: #fff0ec;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.appointments-list {
+  display: grid;
+  gap: 0.85rem;
+}
+.appointment-card {
+  min-height: 5.75rem;
+  border: 1px solid rgba(196, 126, 93, 0.14);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 30px rgba(166, 110, 82, 0.11);
+  display: grid;
+  grid-template-columns: 6.1rem 1fr;
+  overflow: hidden;
+}
+.appointment-time {
+  color: #e98084;
+  background: linear-gradient(135deg, #ffe3e3, #fff0ef);
+  font-size: 1.45rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.appointment-content {
+  min-width: 0;
+  padding: 0.95rem 0.75rem 0.95rem 1rem;
+  display: grid;
+  grid-template-columns: 3.45rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.client-avatar {
+  width: 3.45rem;
+  height: 3.45rem;
+  border-radius: 50%;
+  color: #70402e;
+  background: #fff0eb;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.appointment-info {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.appointment-info strong {
+  color: #33211a;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.appointment-info span {
+  color: #91695c;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.appointment-info i {
+  margin-right: 0.25rem;
+  color: #e48a80;
+  font-size: 0.9rem;
+}
+.appointment-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.status-pill {
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  color: #e47b78;
+  background: #fff0f0;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.details-button {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.8rem;
+  color: #cf795c;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.daily-message {
+  position: relative;
+  margin-top: 1.55rem;
+  padding: 1.15rem 3.1rem 1.15rem 1rem;
+  border-radius: 1.35rem;
+  background: rgba(255, 246, 242, 0.82);
+  box-shadow: 0 16px 36px rgba(166, 110, 82, 0.1);
+  display: grid;
+  grid-template-columns: 3.75rem 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+.daily-icon {
+  width: 3.75rem;
+  height: 3.75rem;
+  border: 1px solid rgba(239, 133, 136, 0.25);
+  border-radius: 50%;
+  color: #f19a95;
+  background: #fff0ed;
+  display: grid;
+  place-items: center;
+}
+.daily-message strong {
+  color: #4d2f22;
+  font-size: 1rem;
+}
+.daily-message p {
+  margin: 0.25rem 0 0;
+  color: #6e4b3c;
+  line-height: 1.3;
+}
+.more-button {
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  color: #d18467;
+  background: transparent;
+  cursor: pointer;
+}
+.floating-button {
+  position: fixed;
+  right: max(1.35rem, calc((100vw - 520px) / 2 + 1.35rem));
+  bottom: 1.8rem;
+  width: 4.8rem;
+  height: 4.8rem;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, #f19a95, #ed747b);
+  box-shadow: 0 20px 36px rgba(237, 116, 123, 0.35);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.floating-button i {
+  font-size: 2rem;
+}
+.drawer-content {
+  height: 100%;
+  padding: 0.5rem;
+  color: #563426;
+  background: linear-gradient(180deg, #fff9f6, #fff0ec);
+}
+.drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.75rem 0.25rem 1.25rem;
+  border-bottom: 1px solid rgba(196, 126, 93, 0.14);
+  margin-bottom: 1rem;
+}
+.brand-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #eeb09b, #ec7c82);
+  font-size: 1.35rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+.drawer-brand strong,
+.drawer-brand span {
+  display: block;
+}
+.drawer-brand strong {
+  font-size: 1.05rem;
+}
+.drawer-brand span {
+  margin-top: 0.15rem;
+  color: #9c6f5e;
+  font-size: 0.85rem;
+}
+.drawer-nav {
+  display: grid;
+  gap: 0.45rem;
+}
+.drawer-item {
+  width: 100%;
+  padding: 0.95rem;
+  border: 0;
+  border-radius: 1rem;
+  color: #6b4434;
+  background: transparent;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+}
+.drawer-item i {
+  color: #d47f65;
+}
+.drawer-item.active,
+.drawer-item:hover {
+  background: rgba(255, 226, 220, 0.7);
+}
+:host ::ng-deep .app-drawer {
+  width: min(82vw, 320px);
+  background: #fff8f5;
+}
+:host ::ng-deep .app-drawer .p-drawer-content {
+  padding: 1rem;
+  background: #fff8f5;
+}
+:host ::ng-deep .app-drawer .p-drawer-header {
+  padding: 1rem 1rem 0;
+  background: #fff8f5;
+}
+@media (max-width: 390px) {
+  .home-page {
+    padding-inline: 1rem;
+  }
+  .shortcut-grid {
+    gap: 0.7rem;
+  }
+  .shortcut-card {
+    min-height: 7.7rem;
+    border-radius: 1.2rem;
+  }
+  .shortcut-icon {
+    width: 3.45rem;
+    height: 3.45rem;
+  }
+  .appointment-card {
+    grid-template-columns: 5rem 1fr;
+  }
+  .appointment-time {
+    font-size: 1.2rem;
+  }
+  .status-pill {
+    display: none;
+  }
+}
+@media (min-width: 760px) {
+  .home-page {
+    padding-top: 2rem;
+  }
+  .toolbar {
+    margin-bottom: 2.8rem;
+  }
+}
