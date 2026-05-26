@@ -1,0 +1,90 @@
+@use './tokens' as *;
+
+.app-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.app-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    margin-left: 0.25rem;
+    color: $color-brown;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+}
+
+.app-input,
+.app-textarea {
+  width: 100%;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.8);
+  color: $color-brown;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: #b59b90;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba(239, 133, 136, 0.15);
+  }
+
+  &.ng-invalid.ng-touched {
+    border-color: #ef4444;
+  }
+}
+
+.app-input {
+  min-height: 3.5rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.app-textarea {
+  min-height: 5.5rem;
+  padding: 1rem 1.25rem;
+  resize: vertical;
+}
+
+.app-input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  i {
+    position: absolute;
+    left: 1.25rem;
+    color: $color-copper;
+    pointer-events: none;
+  }
+
+  .app-input {
+    padding-left: 3rem;
+  }
+}
+
+.app-field-error {
+  margin-left: 0.25rem;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.app-form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}

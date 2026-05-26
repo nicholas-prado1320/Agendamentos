@@ -1,3 +1,8 @@
+@use 'styles/tokens';
+@use 'styles/forms';
+@use 'styles/buttons';
+@use 'styles/prime-overrides';
+
 @import 'primeicons/primeicons.css';
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -6,15 +11,16 @@
 }
 
 html,
-body {
+body,
+app-root {
   min-height: 100%;
   margin: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: tokens.$font-main;
 }
 
 body {
-  background: #fff8f5;
-  color: #573425;
+  background: tokens.$color-bg;
+  color: tokens.$color-brown;
 }
 
 button,
@@ -26,4 +32,9 @@ select {
 
 button {
   cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }

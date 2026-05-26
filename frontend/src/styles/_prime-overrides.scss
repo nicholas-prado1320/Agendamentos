@@ -1,0 +1,130 @@
+@use './tokens' as *;
+
+.p-component {
+  font-family: $font-main;
+}
+
+.p-button {
+  border-radius: $radius-md;
+  font-family: $font-main;
+  font-weight: 600;
+}
+
+.p-button.p-button-primary,
+.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+  background: $color-primary;
+  border-color: $color-primary;
+  color: #fff;
+}
+
+.p-button.p-button-primary:hover,
+.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):hover {
+  background: $color-primary-dark;
+  border-color: $color-primary-dark;
+}
+
+.p-inputtext,
+.p-select,
+.p-datepicker-input,
+.p-textarea {
+  width: 100%;
+  border-color: $color-border;
+  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.8);
+  color: $color-brown;
+  font-family: $font-main;
+}
+
+.p-inputtext::placeholder,
+.p-datepicker-input::placeholder,
+.p-textarea::placeholder,
+.p-placeholder {
+  color: #b59b90;
+}
+
+.p-select:not(.p-disabled):hover,
+.p-inputtext:hover,
+.p-datepicker-input:hover,
+.p-textarea:hover {
+  border-color: $color-primary;
+}
+
+.p-select.p-focus,
+.p-inputtext:enabled:focus,
+.p-datepicker-input:enabled:focus,
+.p-textarea:enabled:focus {
+  border-color: $color-primary;
+  box-shadow: 0 0 0 3px rgba(239, 133, 136, 0.15);
+}
+
+.p-select-label {
+  color: $color-brown;
+}
+
+.p-select-overlay,
+.p-datepicker-panel {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: #fff;
+  color: $color-brown;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.p-select-option {
+  color: $color-brown;
+}
+
+.p-select-option.p-focus {
+  background: #fff0f0;
+  color: $color-brown;
+}
+
+.p-select-option.p-select-option-selected {
+  background: #ffe3e3;
+  color: $color-brown;
+}
+
+.p-datepicker-header {
+  background: #fff;
+  color: $color-brown;
+  border-color: $color-border;
+}
+
+.p-datepicker-day {
+  color: $color-brown;
+}
+
+.p-datepicker-day:not(.p-datepicker-day-selected):hover {
+  background: #fff0f0;
+  color: $color-brown;
+}
+
+.p-datepicker-day-selected {
+  background: $color-primary;
+  color: #fff;
+}
+
+.p-drawer {
+  background: #fff8f5;
+  color: $color-brown;
+}
+
+.p-drawer-header,
+.p-drawer-content {
+  background: #fff8f5;
+  color: $color-brown;
+}
+
+.p-dialog {
+  border-radius: $radius-lg;
+  background: #fff;
+  color: $color-brown;
+}
+
+.p-dialog-header,
+.p-dialog-content,
+.p-dialog-footer {
+  background: #fff;
+  color: $color-brown;
+}

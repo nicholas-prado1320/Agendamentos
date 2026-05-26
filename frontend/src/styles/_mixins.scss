@@ -1,7 +1,9 @@
+@use 'sass:map';
 @use './breakpoints' as bp;
+@use './tokens' as *;
 
 @mixin respond-up($key) {
-  $size: map-get(bp.$breakpoints, $key);
+  $size: map.get(bp.$breakpoints, $key);
 
   @if $size {
     @media (min-width: $size) {
@@ -13,7 +15,7 @@
 }
 
 @mixin respond-down($key) {
-  $size: map-get(bp.$breakpoints, $key);
+  $size: map.get(bp.$breakpoints, $key);
 
   @if $size {
     @media (max-width: $size) {
@@ -25,19 +27,20 @@
 }
 
 @mixin page-shell {
-  width: min(100%, 520px);
+  width: min(100%, $container-mobile);
   min-height: 100dvh;
   margin: 0 auto;
 }
 
 @mixin card-base {
-  border: 1px solid rgba(196, 126, 93, 0.14);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 14px 30px rgba(166, 110, 82, 0.11);
+  border: 1px solid $color-border;
+  background: $color-surface;
+  box-shadow: $shadow-soft;
 }
 
 @mixin button-reset {
   border: 0;
   font: inherit;
   cursor: pointer;
+  background: transparent;
 }

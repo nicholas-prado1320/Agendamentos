@@ -1,0 +1,110 @@
+@use './tokens' as *;
+
+.app-button {
+  width: 100%;
+  min-height: 3.4rem;
+  border: 0;
+  border-radius: $radius-md;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+}
+
+.app-button-primary {
+  @extend .app-button;
+
+  color: #fff;
+  background: $color-primary;
+  box-shadow: 0 10px 20px rgba(237, 116, 123, 0.22);
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+  }
+
+  &:disabled {
+    background: #f7b2b4;
+  }
+}
+
+.app-button-ghost {
+  @extend .app-button;
+
+  color: $color-copper;
+  background: transparent;
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 226, 220, 0.45);
+  }
+}
+
+.app-icon-button {
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 1.1rem;
+  color: $color-copper;
+  background: transparent;
+  font: inherit;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:hover {
+    background: rgba(255, 226, 220, 0.45);
+  }
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.app-floating-button {
+  position: fixed;
+  right: max(1.35rem, calc((100vw - #{$container-mobile}) / 2 + 1.35rem));
+  bottom: 1.8rem;
+  width: 4rem;
+  height: 4rem;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+  box-shadow: $shadow-floating;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  i {
+    font-size: 1.5rem;
+  }
+}
