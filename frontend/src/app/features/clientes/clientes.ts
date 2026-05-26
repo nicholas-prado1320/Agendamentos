@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { DrawerModule } from 'primeng/drawer';
+import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 import { ClienteService } from '../../core/service/cliente.service';
 
 @Component({
   selector: 'app-clientes',
-  imports: [DrawerModule, RouterModule],
+  imports: [AppDrawerComponent, RouterModule],
   templateUrl: './clientes.html',
   styleUrl: './clientes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
