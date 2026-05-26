@@ -1,0 +1,39 @@
+<p-drawer [visible]="visible()" (visibleChange)="alterarVisibilidade($event)" position="left" styleClass="app-drawer-panel" [modal]="true" [dismissible]="true" [blockScroll]="true">
+  <div class="drawer-content">
+    <div class="drawer-brand">
+      <div class="brand-icon">P</div>
+
+      <div>
+        <strong>Peony Beauty</strong>
+        <span>Agenda de atendimentos</span>
+      </div>
+    </div>
+
+    <nav class="drawer-nav">
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('home')" (click)="navegarPara('home')">
+        <i class="pi pi-home"></i>
+        <span>Início</span>
+      </button>
+
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('novo-agendamento')" (click)="navegarPara('novo-agendamento')">
+        <i class="pi pi-calendar-plus"></i>
+        <span>Novo agendamento</span>
+      </button>
+
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('agendamentos')" (click)="navegarPara('agendamentos')">
+        <i class="pi pi-calendar"></i>
+        <span>Agendamentos</span>
+      </button>
+
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('clientes')" (click)="navegarPara('clientes')">
+        <i class="pi pi-users"></i>
+        <span>Clientes</span>
+      </button>
+
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('servicos')" (click)="navegarPara('servicos')">
+        <i class="pi pi-sparkles"></i>
+        <span>Serviços</span>
+      </button>
+    </nav>
+  </div>
+</p-drawer>
