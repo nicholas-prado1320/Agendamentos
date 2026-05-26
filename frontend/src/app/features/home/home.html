@@ -1,37 +1,4 @@
-<p-drawer [(visible)]="menuAberto" position="left" styleClass="app-drawer">
-  <div class="drawer-content">
-    <div class="drawer-brand">
-      <div class="brand-icon">P</div>
-      <div>
-        <strong>Peony Beauty</strong>
-        <span>Agenda de atendimentos</span>
-      </div>
-    </div>
-
-    <nav class="drawer-nav">
-      <button type="button" class="drawer-item active" (click)="fecharMenu()">
-        <i class="pi pi-home"></i>
-        <span>Início</span>
-      </button>
-
-      <button type="button" class="drawer-item" (click)="fecharMenu()">
-        <i class="pi pi-calendar-plus"></i>
-        <span>Novo agendamento</span>
-      </button>
-
-      <button type="button" class="drawer-item" (click)="fecharMenu()">
-        <i class="pi pi-users"></i>
-        <span>Clientes</span>
-      </button>
-
-      <button type="button" class="drawer-item" (click)="fecharMenu()">
-        <i class="pi pi-sparkles"></i>
-        <span>Serviços</span>
-      </button>
-    </nav>
-  </div>
-</p-drawer>
-
+<app-drawer [(visible)]="menuAberto" />
 <main class="home-page">
   <header class="toolbar">
     <button type="button" class="icon-button menu-button" aria-label="Abrir menu" (click)="abrirMenu()">
@@ -56,6 +23,7 @@
       <span class="shortcut-icon">
         <i [class]="atalho.icone"></i>
       </span>
+
       <strong>{{ atalho.titulo }}</strong>
     </button>
     }
@@ -64,7 +32,8 @@
   <section class="appointments-section">
     <div class="section-header">
       <h2>Hoje</h2>
-      <button type="button" class="see-all-button">
+
+      <button type="button" class="see-all-button" (click)="verTodosAgendamentos()">
         Ver todos
         <i class="pi pi-chevron-right"></i>
       </button>
@@ -80,6 +49,7 @@
 
           <div class="appointment-info">
             <strong>{{ agendamento.clienteNome }}</strong>
+
             <span>
               <i class="pi pi-sparkles"></i>
               {{ agendamento.servico }}
@@ -88,6 +58,7 @@
 
           <div class="appointment-actions">
             <span class="status-pill">{{ agendamento.status }}</span>
+
             <button type="button" class="details-button" aria-label="Ver detalhes">
               <i class="pi pi-chevron-right"></i>
             </button>
@@ -95,8 +66,10 @@
         </div>
       </article>
       } @empty {
-      <div style="text-align: center; padding: 2rem; color: #91695c">
+      <div class="empty-state-home">
+        <i class="pi pi-calendar"></i>
         <p>Nenhum agendamento para hoje.</p>
+        <span>Toque em novo agendamento para marcar um horário.</span>
       </div>
       }
     </div>
@@ -109,7 +82,7 @@
 
     <div>
       <strong>Seu dia está incrível</strong>
-      <p>boas energias atraem clientes incríveis! 💗</p>
+      <p>Boas energias atraem clientes incríveis! 💗</p>
     </div>
 
     <button type="button" class="more-button" aria-label="Mais opções">
@@ -117,7 +90,7 @@
     </button>
   </section>
 
-  <button type="button" class="floating-button" aria-label="Novo agendamento">
+  <button type="button" class="floating-button" aria-label="Novo agendamento" (click)="novoAgendamento()">
     <i class="pi pi-calendar-plus"></i>
   </button>
 </main>
