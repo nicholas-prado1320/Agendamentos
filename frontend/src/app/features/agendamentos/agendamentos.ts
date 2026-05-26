@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterModule } from '@angular/router';
 import { AgendamentoService } from '../../core/service/agendamento.service';
 import { ClienteService } from '../../core/service/cliente.service';
+import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 
 @Component({
   selector: 'app-agendamentos',
-  imports: [RouterModule],
+  imports: [AppDrawerComponent, RouterModule],
   templateUrl: './agendamentos.html',
   styleUrl: './agendamentos.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,6 +14,8 @@ import { ClienteService } from '../../core/service/cliente.service';
 export class Agendamentos {
   private agendamentoService = inject(AgendamentoService);
   private clienteService = inject(ClienteService);
+
+  menuAberto = false;
 
   todosAgendamentos = computed(() => {
     const agendamentos = this.agendamentoService.agendamentos();
@@ -30,6 +33,10 @@ export class Agendamentos {
       return dataHoraA - dataHoraB;
     });
   });
+
+  abrirMenu(): void {
+    this.menuAberto = true;
+  }
 
   formatarData(dataIso: string): string {
     if (!dataIso) return '';
