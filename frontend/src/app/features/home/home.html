@@ -52,12 +52,12 @@
 
   <section class="shortcut-grid" aria-label="Ações principais">
     @for (atalho of atalhos; track atalho.id) {
-      <button type="button" class="shortcut-card" (click)="selecionarAtalho(atalho.id)">
-        <span class="shortcut-icon">
-          <i [class]="atalho.icone"></i>
-        </span>
-        <strong>{{ atalho.titulo }}</strong>
-      </button>
+    <button type="button" class="shortcut-card" (click)="selecionarAtalho(atalho.id)">
+      <span class="shortcut-icon">
+        <i [class]="atalho.icone"></i>
+      </span>
+      <strong>{{ atalho.titulo }}</strong>
+    </button>
     }
   </section>
 
@@ -71,29 +71,33 @@
     </div>
 
     <div class="appointments-list">
-      @for (agendamento of agendamentosHoje; track agendamento.id) {
-        <article class="appointment-card">
-          <div class="appointment-time">{{ agendamento.hora }}</div>
+      @for (agendamento of agendamentosHoje(); track agendamento.id) {
+      <article class="appointment-card">
+        <div class="appointment-time">{{ agendamento.hora }}</div>
 
-          <div class="appointment-content">
-            <div class="client-avatar">{{ agendamento.iniciais }}</div>
+        <div class="appointment-content">
+          <div class="client-avatar">{{ agendamento.iniciais }}</div>
 
-            <div class="appointment-info">
-              <strong>{{ agendamento.cliente }}</strong>
-              <span>
-                <i class="pi pi-sparkles"></i>
-                {{ agendamento.servico }}
-              </span>
-            </div>
-
-            <div class="appointment-actions">
-              <span class="status-pill">{{ agendamento.status }}</span>
-              <button type="button" class="details-button" aria-label="Ver detalhes">
-                <i class="pi pi-chevron-right"></i>
-              </button>
-            </div>
+          <div class="appointment-info">
+            <strong>{{ agendamento.clienteNome }}</strong>
+            <span>
+              <i class="pi pi-sparkles"></i>
+              {{ agendamento.servico }}
+            </span>
           </div>
-        </article>
+
+          <div class="appointment-actions">
+            <span class="status-pill">{{ agendamento.status }}</span>
+            <button type="button" class="details-button" aria-label="Ver detalhes">
+              <i class="pi pi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </article>
+      } @empty {
+      <div style="text-align: center; padding: 2rem; color: #91695c">
+        <p>Nenhum agendamento para hoje.</p>
+      </div>
       }
     </div>
   </section>

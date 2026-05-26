@@ -1,19 +1,13 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DrawerModule } from 'primeng/drawer';
+import { Router } from '@angular/router';
+import { ClienteService } from '../../core/service/cliente.service';
+import { AgendamentoService } from '../../core/service/agendamento.service';
 
 interface AtalhoHome {
   id: 'novo-agendamento' | 'hoje' | 'semana';
   titulo: string;
   icone: string;
-}
-
-interface AgendamentoHome {
-  id: number;
-  hora: string;
-  cliente: string;
-  iniciais: string;
-  servico: string;
-  status: string;
 }
 
 @Component({
@@ -24,54 +18,34 @@ interface AgendamentoHome {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
-  menuAberto = false;
+  private router = inject(Router);
+  private clienteService = inject(ClienteService);
+  private agendamentoService = inject(AgendamentoService);
 
+  menuAberto = false;
   readonly dataAtual = 'Segunda-feira, 12 de maio';
 
   readonly atalhos: AtalhoHome[] = [
-    {
-      id: 'novo-agendamento',
-      titulo: 'Novo agendamento',
-      icone: 'pi pi-calendar-plus',
-    },
-    {
-      id: 'hoje',
-      titulo: 'Hoje',
-      icone: 'pi pi-calendar',
-    },
-    {
-      id: 'semana',
-      titulo: 'Semana',
-      icone: 'pi pi-calendar-times',
-    },
+    { id: 'novo-agendamento', titulo: 'Novo agendamento', icone: 'pi pi-calendar-plus' },
+    { id: 'hoje', titulo: 'Hoje', icone: 'pi pi-calendar' },
+    { id: 'semana', titulo: 'Semana', icone: 'pi pi-calendar-times' },
   ];
 
-  readonly agendamentosHoje: AgendamentoHome[] = [
-    {
-      id: 1,
-      hora: '09:00',
-      cliente: 'Maria Eduarda',
-      iniciais: 'MA',
-      servico: 'Esmaltação em gel',
-      status: 'Agendado',
-    },
-    {
-      id: 2,
-      hora: '10:30',
-      cliente: 'Ana Clara',
-      iniciais: 'AC',
-      servico: 'Manicure + Alongamento',
-      status: 'Agendado',
-    },
-    {
-      id: 3,
-      hora: '14:00',
-      cliente: 'Vitória',
-      iniciais: 'VT',
-      servico: 'Manicure tradicional',
-      status: 'Agendado',
-    },
-  ];
+  agendamentosHoje = computed(() => {
+    const agendamentos = this.agendamentoService.agendamentos();
+    const clientes = this.clienteService.clientes();
+
+    return agendamentos.map(agendamento => {
+      // Busca a cliente correspondente
+      const cliente = clientes.find(c => c.id === agendamento.clienteId);
+
+      return {
+        ...agendamento,
+        clienteNome: cliente?.nomeCompleto || 'Cliente excluída',
+        iniciais: cliente?.iniciais || '--'
+      };
+    });
+  });
 
   abrirMenu(): void {
     this.menuAberto = true;
@@ -82,6 +56,13 @@ export class HomeComponent {
   }
 
   selecionarAtalho(atalho: AtalhoHome['id']): void {
-    console.log('Atalho selecionado:', atalho);
+    if (atalho === 'novo-agendamento') {
+      this.router.navigate(['/agendamentos/novo']);
+    } else if (atalho === 'hoje') {
+      // Navegação/ação para "Hoje" será implementada posteriormente
+    } else if (atalho === 'semana') {
+      // Navegação/ação para "Semana" será implementada posteriormente
+    }
+    // Hoje e Semana implementaremos nas próximas telas
   }
 }
