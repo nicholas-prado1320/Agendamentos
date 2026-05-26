@@ -1,0 +1,52 @@
+<main class="page-container">
+  <header class="toolbar">
+    <button type="button" class="icon-button" aria-label="Voltar" (click)="cancelar()">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Novo agendamento</h1>
+    <div class="spacer"></div>
+  </header>
+
+  <section class="header-info">
+    <div class="icon-wrapper">
+      <i class="pi pi-calendar-plus"></i>
+    </div>
+    <div>
+      <h2>Marcar horário</h2>
+      <p>Selecione a cliente e defina os detalhes do atendimento.</p>
+    </div>
+  </section>
+
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="form-layout">
+    <div class="input-group">
+      <label for="clienteId">Cliente *</label>
+      <p-select id="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" class="prime-input-override">
+      </p-select>
+    </div>
+
+    <div class="row-group">
+      <div class="input-group">
+        <label for="data">Data *</label>
+        <p-datepicker id="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA" class="prime-input-override"> </p-datepicker>
+      </div>
+
+      <div class="input-group">
+        <label for="hora">Hora *</label>
+        <p-datepicker id="hora" formControlName="hora" [timeOnly]="true" placeholder="00:00" class="prime-input-override"> </p-datepicker>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label for="servico">Serviço *</label>
+      <p-select id="servico" formControlName="servico" [options]="servicosDisponiveis" placeholder="Qual serviço será feito?" class="prime-input-override"> </p-select>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+        <i class="pi pi-save"></i>
+        Confirmar agendamento
+      </button>
+      <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+    </div>
+  </form>
+</main>

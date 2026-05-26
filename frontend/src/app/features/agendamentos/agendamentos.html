@@ -1,0 +1,49 @@
+<main class="page-container">
+  <header class="toolbar">
+    <button type="button" class="icon-button" aria-label="Voltar" routerLink="/home">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Todos os Agendamentos</h1>
+    <div class="spacer"></div>
+  </header>
+
+  <section class="appointments-list">
+    @for (agendamento of todosAgendamentos(); track agendamento.id) {
+      <article class="appointment-card">
+        <div class="appointment-time-column">
+          <span class="appointment-date">{{ formatarData(agendamento.data) }}</span>
+          <span class="appointment-time">{{ agendamento.hora }}</span>
+        </div>
+
+        <div class="appointment-content">
+          <div class="client-avatar">{{ agendamento.iniciais }}</div>
+
+          <div class="appointment-info">
+            <strong>{{ agendamento.clienteNome }}</strong>
+            <span>
+              <i class="pi pi-sparkles"></i>
+              {{ agendamento.servico }}
+            </span>
+          </div>
+
+          <div class="appointment-actions">
+            <span class="status-pill">{{ agendamento.status }}</span>
+            <button type="button" class="details-button" aria-label="Ver detalhes">
+              <i class="pi pi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <i class="pi pi-calendar"></i>
+        <p>Sua agenda está livre.</p>
+        <span>Nenhum agendamento encontrado.</span>
+      </div>
+    }
+  </section>
+
+  <button type="button" class="floating-button" aria-label="Novo agendamento" routerLink="/agendamentos/novo">
+    <i class="pi pi-plus"></i>
+  </button>
+</main>
