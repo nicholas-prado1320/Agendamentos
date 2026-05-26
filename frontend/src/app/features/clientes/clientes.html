@@ -1,0 +1,56 @@
+<p-drawer [(visible)]="menuAberto" position="left" />
+
+<main class="page-container">
+  <header class="toolbar">
+    <button type="button" class="icon-button" (click)="abrirMenu()">
+      <i class="pi pi-bars"></i>
+    </button>
+    <h1>Clientes</h1>
+    <button type="button" class="icon-button add-button" routerLink="/clientes/novo-cliente">
+      <i class="pi pi-plus"></i>
+    </button>
+  </header>
+
+  <div class="search-bar">
+    <i class="pi pi-search"></i>
+    <input type="text" placeholder="Buscar cliente..." />
+    <button type="button" class="filter-button">
+      <i class="pi pi-filter"></i>
+    </button>
+  </div>
+
+  <section class="clientes-list">
+    <div class="list-header">
+      <span>Cliente</span>
+      <span>Apelido</span>
+      <span>WhatsApp</span>
+    </div>
+
+    <div class="list-body">
+      @for (cliente of clientes(); track cliente.id) {
+      <article class="cliente-card">
+        <div class="client-avatar">{{ cliente.iniciais }}</div>
+
+        <div class="cliente-info">
+          <strong>{{ cliente.nomeCompleto }}</strong>
+        </div>
+
+        <div class="cliente-apelido">
+          <span>{{ cliente.apelido || '-' }}</span>
+        </div>
+
+        <div class="cliente-contato">
+          <span>{{ cliente.whatsapp }}</span>
+          <button type="button" class="edit-button" aria-label="Editar cliente">
+            <i class="pi pi-pencil"></i>
+          </button>
+        </div>
+      </article>
+      } @empty {
+      <div class="empty-state">
+        <p>Nenhum cliente cadastrado.</p>
+      </div>
+      }
+    </div>
+  </section>
+</main>

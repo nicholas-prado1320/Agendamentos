@@ -1,0 +1,66 @@
+<main class="page-container">
+  <header class="toolbar">
+    <button type="button" class="icon-button" aria-label="Voltar" (click)="cancelar()">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Novo cliente</h1>
+    <div class="spacer"></div> </header>
+
+  <section class="header-info">
+    <div class="icon-wrapper">
+      <i class="pi pi-user-plus"></i>
+    </div>
+    <div>
+      <h2>Cadastrar cliente</h2>
+      <p>Preencha os dados abaixo para cadastrar uma nova cliente.</p>
+    </div>
+  </section>
+
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="form-layout">
+    <div class="input-group">
+      <label for="nomeCompleto">Nome completo *</label>
+      <input 
+        id="nomeCompleto" 
+        type="text" 
+        formControlName="nomeCompleto" 
+        placeholder="Ex.: Maria Eduarda da Silva"
+        class="custom-input"
+      />
+    </div>
+
+    <div class="input-group">
+      <label for="apelido">Apelido (opcional)</label>
+      <input 
+        id="apelido" 
+        type="text" 
+        formControlName="apelido" 
+        placeholder="Ex.: Duda, Mari"
+        class="custom-input"
+      />
+    </div>
+
+    <div class="input-group">
+      <label for="whatsapp">WhatsApp *</label>
+      <div class="input-with-icon">
+        <i class="pi pi-phone"></i>
+        <input 
+          id="whatsapp" 
+          type="tel" 
+          formControlName="whatsapp" 
+          placeholder="(11) 99999-9999"
+          class="custom-input"
+        />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+        <i class="pi pi-save"></i>
+        Salvar cliente
+      </button>
+      <button type="button" class="btn-ghost" (click)="cancelar()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</main>
