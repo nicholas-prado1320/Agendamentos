@@ -1,4 +1,4 @@
-@import "primeicons/primeicons.css";
+@import 'primeicons/primeicons.css';
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -9,11 +9,11 @@ html,
 body {
   min-height: 100%;
   margin: 0;
+  font-family: 'Poppins', sans-serif;
 }
 
 body {
   background: #fff8f5;
-  font-family: "Poppins", sans-serif;
   color: #573425;
 }
 
