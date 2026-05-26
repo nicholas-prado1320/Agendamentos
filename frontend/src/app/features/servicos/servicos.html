@@ -1,0 +1,43 @@
+<main class="page-container">
+  <header class="toolbar">
+    <button type="button" class="icon-button" aria-label="Voltar" routerLink="/home">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Serviços</h1>
+    <div class="spacer"></div>
+  </header>
+
+  <section class="services-list">
+    @for (servico of servicos(); track servico.id) {
+      <article class="service-card">
+        <div class="service-icon">
+          <i class="pi pi-sparkles"></i>
+        </div>
+        
+        <div class="service-info">
+          <strong>{{ servico.nome }}</strong>
+          @if (servico.descricao) {
+            <p>{{ servico.descricao }}</p>
+          }
+          <span class="duration-badge">
+            <i class="pi pi-clock"></i>
+            {{ servico.duracao }}
+          </span>
+        </div>
+
+        <button type="button" class="edit-button" aria-label="Editar serviço">
+          <i class="pi pi-pencil"></i>
+        </button>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <i class="pi pi-sparkles"></i>
+        <p>Nenhum serviço cadastrado.</p>
+      </div>
+    }
+  </section>
+
+  <button type="button" class="floating-button" aria-label="Novo serviço" routerLink="/novo-servico">
+    <i class="pi pi-plus"></i>
+  </button>
+</main>
