@@ -27,7 +27,7 @@
     <div class="row-group">
       <div class="input-group">
         <label for="data">Data *</label>
-        <p-datepicker id="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA" class="prime-input-override"> </p-datepicker>
+        <p-datepicker InputId="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA"> </p-datepicker>
       </div>
 
       <div class="input-group">
@@ -38,7 +38,7 @@
 
     <div class="input-group">
       <label for="servico">Serviço *</label>
-      <p-select id="servico" formControlName="servico" [options]="servicosDisponiveis" placeholder="Qual serviço será feito?" class="prime-input-override"> </p-select>
+      <p-select id="servicoId" formControlName="servicoId" [options]="servicos()" optionLabel="nome" optionValue="id" placeholder="Qual serviço será feito?" class="prime-input-override"> </p-select>
     </div>
 
     <div class="actions">

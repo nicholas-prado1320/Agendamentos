@@ -1,15 +1,21 @@
 <app-drawer [(visible)]="menuAberto" />
+
 <main class="page-container">
   <header class="toolbar">
     <button type="button" class="icon-button" aria-label="Abrir menu" (click)="abrirMenu()">
       <i class="pi pi-bars"></i>
     </button>
-    <h1>Todos os Agendamentos</h1>
-    <div class="spacer"></div>
+    <h1>Agendamentos</h1>
   </header>
 
+  <section class="filters-section" aria-label="Filtros de agendamento">
+    @for (filtro of filtros; track filtro.value) {
+    <button type="button" class="filter-chip" [class.active]="filtroSelecionado() === filtro.value" (click)="alterarFiltro(filtro.value)">{{ filtro.label }}</button>
+    }
+  </section>
+
   <section class="appointments-list">
-    @for (agendamento of todosAgendamentos(); track agendamento.id) {
+    @for (agendamento of agendamentosFiltrados(); track agendamento.id) {
     <article class="appointment-card">
       <div class="appointment-time-column">
         <span class="appointment-date">{{ formatarData(agendamento.data) }}</span>
@@ -17,18 +23,20 @@
       </div>
 
       <div class="appointment-content">
-        <div class="client-avatar">{{ agendamento.iniciais }}</div>
+        <div class="client-avatar">{{ agendamento.cliente.iniciais }}</div>
 
         <div class="appointment-info">
-          <strong>{{ agendamento.clienteNome }}</strong>
+          <strong>{{ agendamento.cliente.nomeCompleto }}</strong>
+
           <span>
             <i class="pi pi-sparkles"></i>
-            {{ agendamento.servico }}
+            {{ agendamento.servico.nome }} · {{ formatarPreco(agendamento.servico.preco) }}
           </span>
         </div>
 
         <div class="appointment-actions">
           <span class="status-pill">{{ agendamento.status }}</span>
+
           <button type="button" class="details-button" aria-label="Ver detalhes">
             <i class="pi pi-chevron-right"></i>
           </button>
@@ -38,13 +46,27 @@
     } @empty {
     <div class="empty-state">
       <i class="pi pi-calendar"></i>
+
+      @if (filtroSelecionado() === 'hoje') {
+      <p>Nenhum agendamento para hoje.</p>
+      <span>Os atendimentos de hoje aparecerão aqui.</span>
+      } @else if (filtroSelecionado() === 'semana') {
+      <p>Nenhum agendamento nesta semana.</p>
+      <span>Os atendimentos da semana aparecerão aqui.</span>
+      } @else {
       <p>Sua agenda está livre.</p>
       <span>Nenhum agendamento encontrado.</span>
+      }
+
+      <button type="button" class="empty-action" (click)="novoAgendamento()">
+        <i class="pi pi-plus"></i>
+        Novo agendamento
+      </button>
     </div>
     }
   </section>
 
-  <button type="button" class="floating-button" aria-label="Novo agendamento" routerLink="novo-agendamento">
+  <button type="button" class="floating-button" aria-label="Novo agendamento" (click)="novoAgendamento()">
     <i class="pi pi-plus"></i>
   </button>
 </main>
