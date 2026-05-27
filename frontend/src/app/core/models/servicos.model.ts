@@ -3,4 +3,6 @@ export interface Servico {
   nome: string;
   descricao?: string;
   duracao: string;
+  preco: number;
+  ativo: boolean;
 }

@@ -1,45 +1,44 @@
-:host { 
-  display: block; 
-  min-height: 100dvh; 
-  background: #fffaf7; 
-  font-family: Inter, Arial, sans-serif; 
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #fffaf7;
 }
 
-.page-container { 
-  width: min(100%, 520px); 
-  margin: 0 auto; 
-  padding: 1.5rem 1.25rem; 
+.page-container {
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem;
 }
 
 /* --- CABEÇALHO --- */
-.toolbar { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  margin-bottom: 2rem; 
-  
-  h1 { 
-    margin: 0; 
-    color: #4d2f22; 
-    font-size: 1.25rem; 
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+
+  h1 {
+    margin: 0;
+    color: #4d2f22;
+    font-size: 1.25rem;
   }
 }
 
-.icon-button { 
-  width: 3rem; 
-  height: 3rem; 
-  border: 0; 
-  border-radius: 1.1rem; 
-  background: transparent; 
-  color: #bf7150; 
-  cursor: pointer; 
-  display: grid; 
-  place-items: center; 
+.icon-button {
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 1.1rem;
+  background: transparent;
+  color: #bf7150;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
   font-size: 1.25rem;
 }
 
-.spacer { 
-  width: 3rem; 
+.spacer {
+  width: 3rem;
 }
 
 .header-info {
@@ -103,7 +102,9 @@
   font-size: 1rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 
   &::placeholder {
     color: #b59b90;
@@ -140,7 +141,7 @@
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
-  padding-right: 3rem; 
+  padding-right: 3rem;
 }
 
 /* --- BOTÕES --- */
@@ -164,10 +165,17 @@
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
+    transition:
+      transform 0.2s,
+      background 0.2s;
 
-    &:active { transform: scale(0.98); }
-    &:disabled { background: #f7b2b4; cursor: not-allowed; }
+    &:active {
+      transform: scale(0.98);
+    }
+    &:disabled {
+      background: #f7b2b4;
+      cursor: not-allowed;
+    }
   }
 
   .btn-ghost {
@@ -188,20 +196,22 @@
     width: 100%;
 
     /* Acessa as classes nativas do PrimeNG 21 */
-    .p-select, 
+    .p-select,
     .p-datepicker {
       width: 100%;
       border: 1px solid rgba(196, 126, 93, 0.14);
       border-radius: 1rem;
       background: rgba(255, 255, 255, 0.8);
       /* O prime já tem padding, ajustamos levemente para igualar aos inputs de texto */
-      padding: 0.2rem; 
-      transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 0.2rem;
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 
       &:not(.p-disabled):hover {
         border-color: #ef8588;
       }
-      
+
       &.p-focus {
         border-color: #ef8588;
         box-shadow: 0 0 0 3px rgba(239, 133, 136, 0.15);
@@ -209,7 +219,7 @@
     }
 
     /* Textos internos e placeholders */
-    .p-select-label, 
+    .p-select-label,
     .p-datepicker-input {
       font-family: inherit;
       color: #573425;
@@ -228,5 +238,35 @@
       outline: none;
       box-shadow: none;
     }
+  }
+}
+
+:host ::ng-deep {
+  .p-floatlabel,
+  .p-inputtext,
+  .p-textarea,
+  .p-select,
+  .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-select,
+  .p-inputnumber,
+  .p-inputtext {
+    display: block;
+  }
+
+  .p-inputnumber-input,
+  .p-select-label,
+  .p-inputtext {
+    width: 100%;
+    min-height: 3.75rem;
+    font-family: inherit;
+  }
+
+  .p-textarea {
+    width: 100%;
+    min-height: 7rem;
+    font-family: inherit;
   }
 }

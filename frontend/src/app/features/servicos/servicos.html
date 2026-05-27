@@ -5,41 +5,70 @@
     <button type="button" class="icon-button" aria-label="Abrir menu" (click)="abrirMenu()">
       <i class="pi pi-bars"></i>
     </button>
+
     <h1>Serviços</h1>
-    <div class="spacer"></div>
+
+    <button type="button" class="icon-button add-button" aria-label="Novo serviço" (click)="novoServico()">
+      <i class="pi pi-plus"></i>
+    </button>
   </header>
 
-  <section class="services-list">
-    @for (servico of servicos(); track servico.id) {
-    <article class="service-card">
-      <div class="service-icon">
-        <i class="pi pi-sparkles"></i>
-      </div>
+  <section class="filters-section">
+    @for (filtro of filtros; track filtro.value) {
+    <button type="button" class="filter-chip" [class.active]="filtroSelecionado() === filtro.value" (click)="alterarFiltro(filtro.value)">{{ filtro.label }}</button>
+    }
+  </section>
 
+  <section class="services-list">
+    @for (servico of servicosFiltrados(); track servico.id) {
+    <article class="service-card" [class.inactive]="!servico.ativo">
       <div class="service-info">
-        <strong>{{ servico.nome }}</strong>
+        <div class="service-header">
+          <strong>{{ servico.nome }}</strong>
+
+          @if (!servico.ativo) {
+          <span class="inactive-pill">Inativo</span>
+          }
+        </div>
+
         @if (servico.descricao) {
         <p>{{ servico.descricao }}</p>
         }
-        <span class="duration-badge">
-          <i class="pi pi-clock"></i>
-          {{ servico.duracao }}
-        </span>
+
+        <div class="service-meta">
+          <span>
+            <i class="pi pi-clock"></i>
+            {{ servico.duracao }}
+          </span>
+
+          <span>
+            <i class="pi pi-wallet"></i>
+            {{ formatarPreco(servico.preco) }}
+          </span>
+        </div>
       </div>
 
-      <button type="button" class="edit-button" aria-label="Editar serviço">
-        <i class="pi pi-pencil"></i>
-      </button>
+      <div class="service-actions">
+        <button type="button" aria-label="Atualizar serviço" (click)="editarServico(servico.id)">
+          <i class="pi pi-pencil"></i>
+        </button>
+
+        @if (servico.ativo) {
+        <button type="button" aria-label="Inativar serviço" (click)="inativarServico(servico.id)">
+          <i class="pi pi-times-circle"></i>
+        </button>
+        } @else {
+        <button type="button" aria-label="Ativar serviço" (click)="ativarServico(servico.id)">
+          <i class="pi pi-check-circle"></i>
+        </button>
+        }
+      </div>
     </article>
     } @empty {
     <div class="empty-state">
       <i class="pi pi-sparkles"></i>
-      <p>Nenhum serviço cadastrado.</p>
+      <p>Nenhum serviço encontrado.</p>
     </div>
     }
   </section>
-
-  <button type="button" class="floating-button" aria-label="Novo serviço" routerLink="/novo-servico">
-    <i class="pi pi-plus"></i>
-  </button>
 </main>

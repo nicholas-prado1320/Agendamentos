@@ -3,41 +3,44 @@
     <button type="button" class="icon-button" aria-label="Voltar" (click)="cancelar()">
       <i class="pi pi-arrow-left"></i>
     </button>
-    <h1>Novo serviço</h1>
+
+    <h1>@if (modoEdicao()) { Atualizar serviço } @else { Novo serviço }</h1>
+
     <div class="spacer"></div>
   </header>
 
-  <section class="header-info">
-    <div class="icon-wrapper">
-      <i class="pi pi-sparkles"></i>
-    </div>
-    <div>
-      <h2>Cadastrar serviço</h2>
-      <p>Defina o nome e a duração estimada para o atendimento.</p>
-    </div>
-  </section>
-
   <form [formGroup]="form" (ngSubmit)="salvar()" class="form-layout">
-    <div class="input-group">
+    <p-floatlabel variant="on">
+      <input pInputText id="nome" type="text" formControlName="nome" autocomplete="off" />
+
       <label for="nome">Nome do serviço *</label>
-      <input id="nome" type="text" formControlName="nome" class="custom-input" placeholder="Ex.: Banho de gel" />
-    </div>
+    </p-floatlabel>
 
-    <div class="input-group">
-      <label for="descricao">Descrição (opcional)</label>
-      <textarea id="descricao" formControlName="descricao" class="custom-input custom-textarea" rows="3" placeholder="Detalhes sobre o procedimento..."></textarea>
-    </div>
+    <p-floatlabel variant="on">
+      <textarea pTextarea id="descricao" formControlName="descricao" rows="4" autoResize="true"></textarea>
 
-    <div class="input-group">
-      <label for="duracao">Duração estimada *</label>
-      <p-select id="duracao" formControlName="duracao" [options]="opcoesDuracao" placeholder="Selecione o tempo" class="prime-input-override" appendTo="body"> </p-select>
-    </div>
+      <label for="descricao">Descrição</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <p-select inputId="duracao" formControlName="duracao" [options]="opcoesDuracao()" [editable]="true" />
+
+      <label for="duracao">Duração *</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <p-inputnumber inputId="preco" formControlName="preco" mode="currency" currency="BRL" locale="pt-BR" [min]="0" [minFractionDigits]="2" [maxFractionDigits]="2" />
+
+      <label for="preco">Preço *</label>
+    </p-floatlabel>
 
     <div class="actions">
       <button type="submit" class="btn-primary" [disabled]="form.invalid">
         <i class="pi pi-save"></i>
-        Salvar serviço
+
+        @if (modoEdicao()) { Atualizar serviço } @else { Cadastrar serviço }
       </button>
+
       <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
     </div>
   </form>
