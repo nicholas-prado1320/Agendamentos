@@ -2,55 +2,49 @@
 
 <main class="page-container">
   <header class="toolbar">
-    <button type="button" class="icon-button" (click)="abrirMenu()">
+    <button type="button" class="icon-button" aria-label="Abrir menu" (click)="abrirMenu()">
       <i class="pi pi-bars"></i>
     </button>
+
     <h1>Clientes</h1>
-    <button type="button" class="icon-button add-button" routerLink="novo-cliente">
+
+    <button type="button" class="icon-button add-button" aria-label="Nova cliente" (click)="novoCliente()">
       <i class="pi pi-plus"></i>
     </button>
   </header>
 
-  <div class="search-bar">
-    <i class="pi pi-search"></i>
-    <input type="text" placeholder="Buscar cliente..." />
-    <button type="button" class="filter-button">
-      <i class="pi pi-filter"></i>
-    </button>
-  </div>
+  <section class="search-section">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
 
-  <section class="clientes-list">
-    <div class="list-header">
-      <span>Cliente</span>
-      <span>Apelido</span>
-      <span>WhatsApp</span>
+      <input type="text" placeholder="Buscar cliente" [ngModel]="termoBusca()" (ngModelChange)="alterarBusca($event)" />
     </div>
+  </section>
 
-    <div class="list-body">
-      @for (cliente of clientes(); track cliente.id) {
-      <article class="cliente-card">
-        <div class="client-avatar">{{ cliente.iniciais }}</div>
+  <section class="clients-list">
+    @for (cliente of clientesFiltrados(); track cliente.id) {
+    <article class="client-card">
+      <div class="client-avatar">{{ cliente.iniciais }}</div>
 
-        <div class="cliente-info">
-          <strong>{{ cliente.nomeCompleto }}</strong>
-        </div>
+      <div class="client-info">
+        <strong>{{ cliente.nomeCompleto }}</strong>
 
-        <div class="cliente-apelido">
-          <span>{{ cliente.apelido || '-' }}</span>
-        </div>
+        @if (cliente.apelido) {
+        <span>{{ cliente.apelido }}</span>
+        }
 
-        <div class="cliente-contato">
-          <span>{{ cliente.whatsapp }}</span>
-          <button type="button" class="edit-button" aria-label="Editar cliente">
-            <i class="pi pi-pencil"></i>
-          </button>
-        </div>
-      </article>
-      } @empty {
-      <div class="empty-state">
-        <p>Nenhum cliente cadastrado.</p>
+        <small>{{ cliente.whatsapp }}</small>
       </div>
-      }
+
+      <button type="button" class="delete-button" aria-label="Remover cliente" (click)="removerCliente(cliente.id)">
+        <i class="pi pi-trash"></i>
+      </button>
+    </article>
+    } @empty {
+    <div class="empty-state">
+      <i class="pi pi-users"></i>
+      <p>Nenhuma cliente encontrada.</p>
     </div>
+    }
   </section>
 </main>

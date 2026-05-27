@@ -1,25 +1,32 @@
+@use '../../../styles/tokens' as *;
+@use '../../../styles/mixins' as *;
+
 :host {
   display: block;
   min-height: 100dvh;
-  background: #fffaf7;
-  font-family: Inter, Arial, sans-serif;
+  background: $color-bg;
+  font-family: $font-main;
 }
+
 .page-container {
   width: min(100%, 520px);
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem;
+  padding: 1.5rem 1.25rem 2rem;
 }
 
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
-}
-.toolbar h1 {
-  margin: 0;
-  color: #4d2f22;
-  font-size: 1.5rem;
+  margin-bottom: 1.35rem;
+
+  h1 {
+    margin: 0;
+    color: $color-brown-dark;
+    font-size: 1.45rem;
+    font-weight: 800;
+  }
 }
 
 .icon-button {
@@ -28,99 +35,158 @@
   border: 0;
   border-radius: 1.1rem;
   background: transparent;
-  color: #bf7150;
-  cursor: pointer;
+  color: $color-copper;
   display: grid;
   place-items: center;
+  font-size: 1.25rem;
 }
+
 .add-button {
-  background: #ef8588;
   color: #fff;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+  box-shadow: 0 10px 20px rgba(237, 116, 123, 0.24);
 }
 
-.search-bar {
+.search-section {
+  margin-bottom: 1.25rem;
+}
+
+.search-box {
+  height: 3.5rem;
+  padding: 0 1rem;
+  border: 1px solid $color-border;
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: $shadow-soft;
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(196, 126, 93, 0.14);
-  border-radius: 1rem;
-  padding: 0.5rem 1rem;
-  margin-bottom: 2rem;
-  gap: 0.5rem;
-}
-.search-bar input {
-  border: none;
-  background: transparent;
-  flex: 1;
-  outline: none;
-  color: #573425;
-  font-family: inherit;
-}
-.search-bar i {
-  color: #bf7150;
-}
-.filter-button {
-  border: none;
-  background: transparent;
-  color: #ef8588;
-  cursor: pointer;
+  gap: 0.75rem;
+
+  i {
+    color: $color-copper;
+    font-size: 1rem;
+  }
+
+  input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: $color-brown-dark;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    &::placeholder {
+      color: #b59b90;
+    }
+  }
 }
 
-.clientes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.list-header {
+.clients-list {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.5fr;
-  padding: 0 1rem 0.5rem;
-  color: #4d2f22;
-  font-size: 0.85rem;
-  font-weight: bold;
+  gap: 0.85rem;
 }
 
-.cliente-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  align-items: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(196, 126, 93, 0.14);
+.client-card {
+  padding: 0.95rem;
+  border: 1px solid $color-border;
   border-radius: 1.25rem;
-  gap: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: $shadow-soft;
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) 2.5rem;
+  align-items: center;
+  gap: 0.85rem;
 }
+
 .client-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 3.4rem;
+  height: 3.4rem;
   border-radius: 50%;
-  background: #fff0eb;
-  color: #70402e;
+  color: $color-brown;
+  background: $color-primary-soft;
+  font-size: 0.9rem;
+  font-weight: 800;
   display: grid;
   place-items: center;
-  font-weight: bold;
-  font-size: 0.9rem;
 }
-.cliente-info strong {
-  color: #4d2f22;
-  font-size: 0.95rem;
+
+.client-info {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+
+  strong {
+    color: $color-brown-dark;
+    font-size: 0.98rem;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  span {
+    color: $color-copper;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  small {
+    color: $color-brown-soft;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
 }
-.cliente-apelido span,
-.cliente-contato span {
-  color: #735345;
-  font-size: 0.85rem;
+
+.delete-button {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  border-radius: 0.9rem;
+  color: #d94f61;
+  background: #fff0f0;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
 }
-.cliente-contato {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+
+.empty-state {
+  min-height: 16rem;
+  padding: 2rem 1rem;
+  border: 1px dashed rgba(196, 126, 93, 0.22);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.58);
+  color: $color-brown-soft;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.7rem;
+
+  i {
+    color: #eec5c6;
+    font-size: 2.4rem;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 700;
+  }
 }
-.edit-button {
-  border: none;
-  background: transparent;
-  color: #ef8588;
-  cursor: pointer;
+
+@include respond-up(md) {
+  .page-container {
+    width: min(100%, 720px);
+    padding-top: 2rem;
+  }
+}
+
+@include respond-up(lg) {
+  .page-container {
+    width: min(100%, 960px);
+  }
+
+  .clients-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
