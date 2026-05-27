@@ -1,7 +1,9 @@
+@use '../../../styles/tokens' as *;
+@use '../../../styles/mixins' as *;
+
 :host {
   display: block;
   min-height: 100dvh;
-  font-family: Inter, Arial, sans-serif;
   color: #573425;
   background: radial-gradient(circle at top, #fff4ef 0, #fffaf7 42%, #fff3ee 100%);
 }
@@ -374,5 +376,43 @@
     color: #91695c;
     font-size: 0.88rem;
     line-height: 1.35;
+  }
+}
+
+@include respond-up(md) {
+  .home-page {
+    width: min(100%, 720px);
+    padding-top: 2rem;
+  }
+
+  .shortcut-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .appointments-list {
+    gap: 1rem;
+  }
+
+  .appointment-card {
+    grid-template-columns: 7rem 1fr;
+  }
+}
+
+@include respond-up(lg) {
+  .home-page {
+    width: min(100%, 960px);
+  }
+
+  .shortcut-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 520px;
+  }
+
+  .appointments-section {
+    max-width: 620px;
+  }
+
+  .daily-message {
+    max-width: 620px;
   }
 }

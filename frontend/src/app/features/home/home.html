@@ -45,14 +45,14 @@
         <div class="appointment-time">{{ agendamento.hora }}</div>
 
         <div class="appointment-content">
-          <div class="client-avatar">{{ agendamento.iniciais }}</div>
+          <div class="client-avatar">{{ agendamento.cliente.iniciais }}</div>
 
           <div class="appointment-info">
-            <strong>{{ agendamento.clienteNome }}</strong>
+            <strong>{{ agendamento.cliente.nomeCompleto }}</strong>
 
             <span>
               <i class="pi pi-sparkles"></i>
-              {{ agendamento.servico }}
+              {{ agendamento.servico.nome }}
             </span>
           </div>
 

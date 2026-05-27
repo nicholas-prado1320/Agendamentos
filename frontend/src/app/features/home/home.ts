@@ -5,7 +5,7 @@ import { AgendamentoService } from '../../core/service/agendamento.service';
 import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 
 interface AtalhoHome {
-  id: 'novo-agendamento' | 'hoje' | 'semana';
+  id: 'Agenda';
   titulo: string;
   icone: string;
 }
@@ -29,21 +29,11 @@ export class HomeComponent {
   public readonly dataAtual = this.formatarDataAtual();
 
   public readonly atalhos: AtalhoHome[] = [
-    {
-      id: 'novo-agendamento',
-      titulo: 'Novo agendamento',
-      icone: 'pi pi-calendar-plus',
-    },
-    {
-      id: 'hoje',
-      titulo: 'Hoje',
-      icone: 'pi pi-calendar',
-    },
-    {
-      id: 'semana',
-      titulo: 'Semana',
-      icone: 'pi pi-calendar-times',
-    },
+    // {
+    //   id: 'Agenda',
+    //   titulo: 'Agenda',
+    //   icone: 'pi pi-calendar-plus',
+    // }
   ];
 
   public readonly agendamentosHoje = computed(() => {
@@ -51,7 +41,7 @@ export class HomeComponent {
     const clientes = this.clienteService.clientes();
     return this.agendamentoService.agendamentos().filter((agendamento) =>
       agendamento.data === hoje).map((agendamento) => {
-        const cliente = clientes.find((item) => item.id === agendamento.clienteId);
+        const cliente = clientes.find((item) => item.id === agendamento.cliente.id);
         return {
           ...agendamento,
           clienteNome: cliente?.nomeCompleto ?? 'Cliente excluída',
@@ -82,25 +72,14 @@ export class HomeComponent {
   }
 
   selecionarAtalho(atalho: AtalhoHome['id']): void {
-    if (atalho === 'novo-agendamento') {
-      this.novoAgendamento();
-      return;
-    }
-
-    if (atalho === 'hoje') {
-      this.router.navigate(['/agendamentos'], {
-        queryParams: {
-          filtro: 'hoje',
-        },
-      });
-      return;
-    }
-
-    this.router.navigate(['/agendamentos'], {
-      queryParams: {
-        filtro: 'semana',
-      },
-    });
+    // if (atalho === 'Agenda') {
+    //   this.router.navigate(['/agendamentos'], {
+    //     queryParams: {
+    //       filtro: 'Agenda',
+    //     },
+    //   });
+    //   return;
+    // }
   }
 
   novoAgendamento(): void {
