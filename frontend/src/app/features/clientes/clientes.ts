@@ -31,6 +31,14 @@ export class Clientes {
     this.router.navigate(['/novo-cliente']);
   }
 
+  editarCliente(id: string): void {
+    this.router.navigate(['/novo-cliente'], {
+      queryParams: {
+        id,
+      },
+    });
+  }
+
   alterarBusca(valor: string): void {
     this.termoBusca.set(valor);
   }

@@ -36,9 +36,15 @@
         <small>{{ cliente.whatsapp }}</small>
       </div>
 
-      <button type="button" class="delete-button" aria-label="Remover cliente" (click)="removerCliente(cliente.id)">
-        <i class="pi pi-trash"></i>
-      </button>
+      <div class="client-actions">
+        <button type="button" class="edit-button" aria-label="Editar cliente" (click)="editarCliente(cliente.id)">
+          <i class="pi pi-pencil"></i>
+        </button>
+
+        <button type="button" class="delete-button" aria-label="Remover cliente" (click)="removerCliente(cliente.id)">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
     </article>
     } @empty {
     <div class="empty-state">

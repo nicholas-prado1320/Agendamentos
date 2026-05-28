@@ -1,5 +1,7 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, inject } from '@angular/core';
 import { Cliente } from '../models/cliente.model';
+import { AgendamentoService } from './agendamento.service';
+import { ClienteRequest } from '../models/dtos/cliente.dto';
 
 export type NovoClientePayload = Omit<Cliente, 'id' | 'iniciais'>;
 export type EditarClientePayload = Omit<Cliente, 'iniciais'>;
@@ -8,6 +10,8 @@ export type EditarClientePayload = Omit<Cliente, 'iniciais'>;
     providedIn: 'root',
 })
 export class ClienteService {
+
+    private readonly agendamentoService = inject(AgendamentoService);
 
     private readonly mockInicial: Cliente[] = [
         {
@@ -59,6 +63,25 @@ export class ClienteService {
     public readonly clientes = this.clientesState.asReadonly();
     public readonly totalClientes = computed(() => this.clientesState().length);
 
+    listar(): Cliente[] {
+        return this.clientesState();
+    }
+
+    criar(payload: ClienteRequest): void {
+        this.adicionarCliente(payload);
+    }
+
+    atualizar(id: string, payload: ClienteRequest): void {
+        this.editarCliente({
+            id,
+            ...payload,
+        });
+    }
+
+    remover(id: string): void {
+        this.removerCliente(id);
+    }
+
     buscarPorId(id: string): Cliente | undefined {
         return this.clientesState().find((cliente) => cliente.id === id);
     }
@@ -86,10 +109,19 @@ export class ClienteService {
     }
 
     editarCliente(dados: EditarClientePayload): void {
+        const clienteAtualizada: Cliente = {
+            ...dados,
+            iniciais: this.gerarIniciais(dados.nomeCompleto),
+        };
         this.clientesState.update((clientes) =>
-            clientes.map((cliente) => cliente.id === dados.id ? { ...dados, iniciais: this.gerarIniciais(dados.nomeCompleto), } : cliente
-            )
+            clientes.map((cliente) => (cliente.id === dados.id ? clienteAtualizada : cliente))
         );
+        this.agendamentoService.atualizarClienteNosAgendamentos({
+            id: clienteAtualizada.id,
+            nomeCompleto: clienteAtualizada.nomeCompleto,
+            apelido: clienteAtualizada.apelido,
+            iniciais: clienteAtualizada.iniciais,
+        });
     }
 
     removerCliente(id: string): void {
