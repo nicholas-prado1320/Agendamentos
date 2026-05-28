@@ -1,0 +1,65 @@
+### Listar clientes
+GET http://localhost:8080/clientes
+
+
+### Criar cliente
+POST http://localhost:8080/clientes
+Content-Type: application/json
+
+{
+  "nomeCompleto": "",
+  "apelido": "Duda",
+  "whatsapp": "(79) 99999-9999"
+}
+
+
+### Listar serviços
+GET http://localhost:8080/servicos
+
+
+### Criar serviço
+POST http://localhost:8080/servicos
+Content-Type: application/json
+
+{
+  "nome": "Esmaltação em gel",
+  "descricao": "Esmaltação de alta durabilidade.",
+  "duracao": "1h 30min",
+  "preco": 70.00
+}
+
+
+### Criar agendamento
+POST http://localhost:8080/agendamentos
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "servicoId": 1,
+  "data": "2026-05-28",
+  "hora": "09:00"
+}
+
+
+### Listar agendamentos
+GET http://localhost:8080/agendamentos
+
+
+### Listar agendamentos de hoje
+GET http://localhost:8080/agendamentos/hoje
+
+
+### Listar agendamentos da semana
+GET http://localhost:8080/agendamentos/semana
+
+
+### Concluir agendamento
+PATCH http://localhost:8080/agendamentos/1/concluir
+
+
+### Cancelar agendamento
+PATCH http://localhost:8080/agendamentos/1/cancelar
+
+
+### Excluir agendamento
+DELETE http://localhost:8080/agendamentos/1
