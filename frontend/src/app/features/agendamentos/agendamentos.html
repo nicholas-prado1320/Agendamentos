@@ -35,10 +35,20 @@
         </div>
 
         <div class="appointment-actions">
-          <span class="status-pill">{{ agendamento.status }}</span>
+          <span class="status-pill" [class.done]="agendamento.status === 'Concluído'" [class.canceled]="agendamento.status === 'Cancelado'"> {{ agendamento.status }} </span>
 
-          <button type="button" class="details-button" aria-label="Ver detalhes">
-            <i class="pi pi-chevron-right"></i>
+          @if (podeConcluir(agendamento.status)) {
+          <button type="button" class="action-button success" aria-label="Concluir agendamento" (click)="concluirAgendamento(agendamento.id)">
+            <i class="pi pi-check-circle"></i>
+          </button>
+          } @if (podeCancelar(agendamento.status)) {
+          <button type="button" class="action-button warning" aria-label="Cancelar agendamento" (click)="cancelarAgendamento(agendamento.id)">
+            <i class="pi pi-times-circle"></i>
+          </button>
+          }
+
+          <button type="button" class="action-button danger" aria-label="Excluir agendamento" (click)="removerAgendamento(agendamento.id)">
+            <i class="pi pi-trash"></i>
           </button>
         </div>
       </div>

@@ -55,6 +55,38 @@ export class Agendamentos {
     });
   }
 
+  concluirAgendamento(id: string): void {
+    const confirmou = confirm('Deseja marcar este agendamento como concluído?');
+    if (!confirmou) {
+      return;
+    }
+    this.agendamentoService.concluirAgendamento(id);
+  }
+
+  cancelarAgendamento(id: string): void {
+    const confirmou = confirm('Deseja cancelar este agendamento?');
+    if (!confirmou) {
+      return;
+    }
+    this.agendamentoService.cancelarAgendamento(id);
+  }
+
+  removerAgendamento(id: string): void {
+    const confirmou = confirm('Deseja excluir este agendamento?');
+    if (!confirmou) {
+      return;
+    }
+    this.agendamentoService.removerAgendamento(id);
+  }
+
+  podeConcluir(status: string): boolean {
+    return status === 'Agendado';
+  }
+
+  podeCancelar(status: string): boolean {
+    return status === 'Agendado';
+  }
+
   abrirMenu(): void {
     this.menuAberto = true;
   }

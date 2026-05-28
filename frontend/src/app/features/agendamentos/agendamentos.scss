@@ -355,3 +355,45 @@
     grid-column: 1 / -1;
   }
 }
+
+.appointment-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.action-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 0.8rem;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  background: $color-bg-soft;
+}
+
+.action-button.success {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.action-button.warning {
+  color: #d94f61;
+  background: #fff0f0;
+}
+
+.action-button.danger {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.status-pill.done {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.status-pill.canceled {
+  color: #991b1b;
+  background: #fee2e2;
+}

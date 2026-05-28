@@ -47,6 +47,13 @@ export class NovoAgendamento {
       this.form.markAllAsTouched();
       return;
     }
+    const data = this.formatarDataParaIso(formValue.data);
+    const hora = this.formatarHora(formValue.hora);
+    const horarioOcupado = this.agendamentoService.existeAgendamentoNoHorario(data, hora);
+    if (horarioOcupado) {
+      alert('Já existe um agendamento ativo para esta data e horário.');
+      return;
+    }
     this.agendamentoService.adicionarAgendamento({
       cliente: {
         id: cliente.id,
@@ -59,9 +66,10 @@ export class NovoAgendamento {
         nome: servico.nome,
         preco: servico.preco,
       },
-      data: this.formatarDataParaIso(formValue.data),
-      hora: this.formatarHora(formValue.hora),
+      data,
+      hora,
     });
+    this.router.navigate(['/agendamentos']);
     this.router.navigate(['/agendamentos']);
   }
 

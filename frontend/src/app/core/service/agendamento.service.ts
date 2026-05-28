@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { Agendamento } from '../models/agendamento.model';
+import { Agendamento, ClienteAgendamento, ServicoAgendamento } from '../models/agendamento.model';
+import { AgendamentoRequest } from '../models/dtos/agendamento.dto';
 
 export type NovoAgendamentoPayload = Omit<Agendamento, 'id' | 'status'>;
 
@@ -29,6 +30,22 @@ export class AgendamentoService {
 
     public readonly agendamentos = this.agendamentosState.asReadonly();
 
+    listar(): Agendamento[] {
+        return this.agendamentosState();
+    }
+
+    remover(id: string): void {
+        this.removerAgendamento(id);
+    }
+
+    concluir(id: string): void {
+        this.concluirAgendamento(id);
+    }
+
+    cancelar(id: string): void {
+        this.cancelarAgendamento(id);
+    }
+
     adicionarAgendamento(dados: NovoAgendamentoPayload): void {
         const novoAgendamento: Agendamento = {
             ...dados,
@@ -52,5 +69,48 @@ export class AgendamentoService {
 
     removerAgendamento(id: string): void {
         this.agendamentosState.update((lista) => lista.filter((agendamento) => agendamento.id !== id));
+    }
+
+    existeAgendamentoNoHorario(data: string, hora: string): boolean {
+        return this.agendamentosState().some((agendamento) => {
+            const mesmoDia = agendamento.data === data;
+            const mesmaHora = agendamento.hora === hora;
+            const estaAtivo = agendamento.status === 'Agendado';
+            return mesmoDia && mesmaHora && estaAtivo;
+        });
+    }
+
+    atualizarClienteNosAgendamentos(clienteAtualizada: ClienteAgendamento): void {
+        this.agendamentosState.update((agendamentos) =>
+            agendamentos.map((agendamento) =>
+                agendamento.cliente.id === clienteAtualizada.id
+                    ? {
+                        ...agendamento,
+                        cliente: {
+                            ...agendamento.cliente,
+                            nomeCompleto: clienteAtualizada.nomeCompleto,
+                            apelido: clienteAtualizada.apelido,
+                            iniciais: clienteAtualizada.iniciais,
+                        },
+                    } : agendamento
+            )
+        );
+    }
+
+    atualizarServicoNosAgendamentos(servicoAtualizado: ServicoAgendamento): void {
+        this.agendamentosState.update((agendamentos) =>
+            agendamentos.map((agendamento) =>
+                agendamento.servico.id === servicoAtualizado.id
+                    ? {
+                        ...agendamento,
+                        servico: {
+                            ...agendamento.servico,
+                            nome: servicoAtualizado.nome,
+                            preco: servicoAtualizado.preco,
+                        },
+                    }
+                    : agendamento
+            )
+        );
     }
 }
