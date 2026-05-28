@@ -1,5 +1,7 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, inject } from '@angular/core';
 import { Servico } from '../models/servicos.model';
+import { AgendamentoService } from './agendamento.service';
+import { ServicoRequest } from '../models/dtos/servico.dto';
 
 export type NovoServicoPayload = Omit<Servico, 'id' | 'ativo'>;
 export type EditarServicoPayload = Omit<Servico, 'ativo'>;
@@ -8,6 +10,8 @@ export type EditarServicoPayload = Omit<Servico, 'ativo'>;
   providedIn: 'root',
 })
 export class ServicoService {
+  private readonly agendamentoService = inject(AgendamentoService);
+
   private readonly servicosState = signal<Servico[]>([
     {
       id: '1',
@@ -49,6 +53,21 @@ export class ServicoService {
     return this.servicosState().filter((servico) => servico.ativo);
   });
 
+  listar(): Servico[] {
+    return this.servicosState();
+  }
+
+  criar(payload: ServicoRequest): void {
+    this.adicionarServico(payload);
+  }
+
+  atualizar(id: string, payload: ServicoRequest): void {
+    this.editarServico({
+      id,
+      ...payload,
+    });
+  }
+
   buscarPorId(id: string): Servico | undefined {
     return this.servicosState().find((servico) => servico.id === id);
   }
@@ -64,19 +83,18 @@ export class ServicoService {
   }
 
   editarServico(dados: EditarServicoPayload): void {
+    const servicoAtualizado: Servico = {
+      ...dados,
+      ativo: this.buscarPorId(dados.id)?.ativo ?? true,
+    };
     this.servicosState.update((servicos) =>
-      servicos.map((servico) =>
-        servico.id === dados.id
-          ? {
-            ...servico,
-            nome: dados.nome,
-            descricao: dados.descricao,
-            duracao: dados.duracao,
-            preco: dados.preco,
-          }
-          : servico
-      )
+      servicos.map((servico) => (servico.id === dados.id ? servicoAtualizado : servico))
     );
+    this.agendamentoService.atualizarServicoNosAgendamentos({
+      id: servicoAtualizado.id,
+      nome: servicoAtualizado.nome,
+      preco: servicoAtualizado.preco,
+    });
   }
 
   inativarServico(id: string): void {
