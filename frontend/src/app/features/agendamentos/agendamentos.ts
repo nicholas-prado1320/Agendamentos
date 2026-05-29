@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AgendamentoService } from '../../core/service/agendamento.service';
 import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
+import { Agendamento } from '../../core/models/agendamento.model';
+import { mapAgendamentoResponseToModel } from '../../core/mappers/agendamento.mapper';
 
 type FiltroAgendamento = 'todos' | 'hoje' | 'semana';
 
@@ -15,9 +18,12 @@ type FiltroAgendamento = 'todos' | 'hoje' | 'semana';
 export class Agendamentos {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly agendamentoService = inject(AgendamentoService);
 
   public readonly filtroSelecionado = signal<FiltroAgendamento>('todos');
+  public readonly agendamentos = signal<Agendamento[]>([]);
+  public readonly carregando = signal(false);
 
   menuAberto = false;
 
@@ -28,16 +34,7 @@ export class Agendamentos {
   ];
 
   public readonly agendamentosFiltrados = computed(() => {
-    const filtro = this.filtroSelecionado();
-    return this.agendamentoService.agendamentos().filter((agendamento) => {
-      if (filtro === 'hoje') {
-        return this.ehHoje(agendamento.data);
-      }
-      if (filtro === 'semana') {
-        return this.estaNaSemanaAtual(agendamento.data);
-      }
-      return true;
-    }).sort((a, b) => {
+    return this.agendamentos().sort((a, b) => {
       const dataHoraA = new Date(`${a.data}T${a.hora}`).getTime();
       const dataHoraB = new Date(`${b.data}T${b.hora}`).getTime();
       return dataHoraA - dataHoraB;
@@ -45,46 +42,76 @@ export class Agendamentos {
   });
 
   constructor() {
-    this.route.queryParamMap.subscribe((params) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const filtro = params.get('filtro');
       if (filtro === 'hoje' || filtro === 'semana' || filtro === 'todos') {
         this.filtroSelecionado.set(filtro);
-        return;
+      } else {
+        this.filtroSelecionado.set('todos');
       }
-      this.filtroSelecionado.set('todos');
+      this.carregarAgendamentos();
     });
   }
 
-  concluirAgendamento(id: string): void {
+  concluirAgendamento(id: number): void {
     const confirmou = confirm('Deseja marcar este agendamento como concluído?');
     if (!confirmou) {
       return;
     }
-    this.agendamentoService.concluirAgendamento(id);
+    this.agendamentoService.concluir(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (agendamentoAtualizado) => {
+        const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
+        this.agendamentos.update((agendamentos) =>
+          agendamentos.map((item) => (item.id === id ? agendamento : item))
+        );
+      },
+      error: () => {
+        alert('Não foi possível concluir o agendamento.');
+      },
+    });
   }
 
-  cancelarAgendamento(id: string): void {
+  cancelarAgendamento(id: number): void {
     const confirmou = confirm('Deseja cancelar este agendamento?');
     if (!confirmou) {
       return;
     }
-    this.agendamentoService.cancelarAgendamento(id);
+    this.agendamentoService.cancelar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (agendamentoAtualizado) => {
+        const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
+        this.agendamentos.update((agendamentos) =>
+          agendamentos.map((item) => (item.id === id ? agendamento : item))
+        );
+      },
+      error: () => {
+        alert('Não foi possível cancelar o agendamento.');
+      },
+    });
   }
 
-  removerAgendamento(id: string): void {
+  removerAgendamento(id: number): void {
     const confirmou = confirm('Deseja excluir este agendamento?');
     if (!confirmou) {
       return;
     }
-    this.agendamentoService.removerAgendamento(id);
+    this.agendamentoService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.agendamentos.update((agendamentos) =>
+          agendamentos.filter((agendamento) => agendamento.id !== id)
+        );
+      },
+      error: () => {
+        alert('Não foi possível excluir o agendamento.');
+      },
+    });
   }
 
   podeConcluir(status: string): boolean {
-    return status === 'Agendado';
+    return status === 'AGENDADO';
   }
 
   podeCancelar(status: string): boolean {
-    return status === 'Agendado';
+    return status === 'AGENDADO';
   }
 
   abrirMenu(): void {
@@ -119,6 +146,15 @@ export class Agendamentos {
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
+  formatarStatus(status: string): string {
+    const statusMap: Record<string, string> = {
+      AGENDADO: 'Agendado',
+      CONCLUIDO: 'Concluído',
+      CANCELADO: 'Cancelado',
+    };
+    return statusMap[status] ?? status;
+  }
+
   formatarPreco(valor: number): string {
     return valor.toLocaleString('pt-BR', {
       style: 'currency',
@@ -126,20 +162,19 @@ export class Agendamentos {
     });
   }
 
-  private ehHoje(dataIso: string): boolean {
-    const hoje = new Date().toISOString().split('T')[0];
-    return dataIso === hoje;
-  }
-
-  private estaNaSemanaAtual(dataIso: string): boolean {
-    const data = new Date(`${dataIso}T00:00:00`);
-    const hoje = new Date();
-    const inicioSemana = new Date(hoje);
-    inicioSemana.setDate(hoje.getDate() - hoje.getDay());
-    inicioSemana.setHours(0, 0, 0, 0);
-    const fimSemana = new Date(inicioSemana);
-    fimSemana.setDate(inicioSemana.getDate() + 6);
-    fimSemana.setHours(23, 59, 59, 999);
-    return data >= inicioSemana && data <= fimSemana;
+  private carregarAgendamentos(): void {
+    this.carregando.set(true);
+    const filtro = this.filtroSelecionado();
+    const request$ = filtro === 'hoje' ? this.agendamentoService.listarHoje() : filtro === 'semana' ? this.agendamentoService.listarSemana() : this.agendamentoService.listar();
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (agendamentos) => {
+        this.agendamentos.set(agendamentos.map(mapAgendamentoResponseToModel));
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.carregando.set(false);
+        alert('Não foi possível carregar os agendamentos.');
+      },
+    });
   }
 }

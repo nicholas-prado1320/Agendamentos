@@ -35,7 +35,7 @@
         </div>
 
         <div class="appointment-actions">
-          <span class="status-pill" [class.done]="agendamento.status === 'Concluído'" [class.canceled]="agendamento.status === 'Cancelado'"> {{ agendamento.status }} </span>
+          <span class="status-pill"> {{ formatarStatus(agendamento.status) }} </span>
 
           @if (podeConcluir(agendamento.status)) {
           <button type="button" class="action-button success" aria-label="Concluir agendamento" (click)="concluirAgendamento(agendamento.id)">

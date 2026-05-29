@@ -1,13 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
-
 import { ClienteService } from '../../core/service/cliente.service';
 import { AgendamentoService } from '../../core/service/agendamento.service';
 import { ServicoService } from '../../core/service/servicos.service';
+import { Cliente } from '../../core/models/cliente.model';
+import { Servico } from '../../core/models/servicos.model';
+import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
+import { mapClienteResponseToModel } from '../../core/mappers/cliente.mapper';
+import { mapServicoResponseToModel } from '../../core/mappers/servico.mapper';
 
 @Component({
   selector: 'app-novo-agendamento',
@@ -19,21 +24,27 @@ import { ServicoService } from '../../core/service/servicos.service';
 export class NovoAgendamento {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly clienteService = inject(ClienteService);
   private readonly servicoService = inject(ServicoService);
   private readonly agendamentoService = inject(AgendamentoService);
 
-  public readonly clientes = this.clienteService.clientes;
-
-  public readonly servicos = this.servicoService.servicosAtivos;
+  public readonly clientes = signal<Cliente[]>([]);
+  public readonly servicos = signal<Servico[]>([]);
+  public readonly carregando = signal(false);
+  public readonly salvando = signal(false);
 
   public readonly form = this.fb.group({
-    clienteId: ['', [Validators.required]],
-    servicoId: ['', [Validators.required]],
+    clienteId: [null as number | null, [Validators.required]],
+    servicoId: [null as number | null, [Validators.required]],
     data: [null as Date | null, [Validators.required]],
     hora: [null as Date | null, [Validators.required]],
   });
+
+  constructor() {
+    this.carregarDados();
+  }
 
   salvar(): void {
     if (this.form.invalid) {
@@ -41,40 +52,56 @@ export class NovoAgendamento {
       return;
     }
     const formValue = this.form.getRawValue();
-    const cliente = this.clientes().find((item) => item.id === formValue.clienteId);
-    const servico = this.servicos().find((item) => item.id === formValue.servicoId);
-    if (!cliente || !servico || !formValue.data || !formValue.hora) {
+    if (!formValue.clienteId || !formValue.servicoId || !formValue.data || !formValue.hora) {
       this.form.markAllAsTouched();
       return;
     }
-    const data = this.formatarDataParaIso(formValue.data);
-    const hora = this.formatarHora(formValue.hora);
-    const horarioOcupado = this.agendamentoService.existeAgendamentoNoHorario(data, hora);
-    if (horarioOcupado) {
-      alert('Já existe um agendamento ativo para esta data e horário.');
-      return;
-    }
-    this.agendamentoService.adicionarAgendamento({
-      cliente: {
-        id: cliente.id,
-        nomeCompleto: cliente.nomeCompleto,
-        apelido: cliente.apelido,
-        iniciais: cliente.iniciais,
+    const payload = {
+      clienteId: formValue.clienteId,
+      servicoId: formValue.servicoId,
+      data: this.formatarDataParaIso(formValue.data),
+      hora: this.formatarHora(formValue.hora),
+    };
+
+    this.salvando.set(true);
+
+    this.agendamentoService.criar(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.router.navigate(['/agendamentos']);
       },
-      servico: {
-        id: servico.id,
-        nome: servico.nome,
-        preco: servico.preco,
+      error: (error) => {
+        this.salvando.set(false);
+        alert(this.extrairMensagemErro(error));
       },
-      data,
-      hora,
     });
-    this.router.navigate(['/agendamentos']);
-    this.router.navigate(['/agendamentos']);
   }
 
   cancelar(): void {
     this.router.navigate(['/agendamentos']);
+  }
+
+  private carregarDados(): void {
+    this.carregando.set(true);
+    this.clienteService.listarAtivos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (clientes) => {
+        this.clientes.set(clientes.map(mapClienteResponseToModel));
+      },
+      error: () => {
+        alert('Não foi possível carregar as clientes.');
+      },
+    });
+
+    this.servicoService.listarAtivos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (servicos) => {
+        this.servicos.set(servicos.map(mapServicoResponseToModel));
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.carregando.set(false);
+        alert('Não foi possível carregar os serviços.');
+      },
+    });
   }
 
   private formatarDataParaIso(data: Date): string {
@@ -88,5 +115,16 @@ export class NovoAgendamento {
     const hora = String(data.getHours()).padStart(2, '0');
     const minuto = String(data.getMinutes()).padStart(2, '0');
     return `${hora}:${minuto}`;
+  }
+
+  private extrairMensagemErro(error: HttpErrorResponse): string {
+    const apiError = error.error as ApiErrorResponse | undefined;
+    if (apiError?.details?.length) {
+      return apiError.details.join('\n');
+    }
+    if (apiError?.message) {
+      return apiError.message;
+    }
+    return 'Não foi possível criar o agendamento.';
   }
 }
