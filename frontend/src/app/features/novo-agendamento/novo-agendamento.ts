@@ -13,6 +13,9 @@ import { Servico } from '../../core/models/servicos.model';
 import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
 import { mapClienteResponseToModel } from '../../core/mappers/cliente.mapper';
 import { mapServicoResponseToModel } from '../../core/mappers/servico.mapper';
+import { DialogService } from '../../core/service/dialog.service';
+import { AuthService } from '../../core/service/auth.service';
+import { forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-novo-agendamento',
@@ -25,10 +28,12 @@ export class NovoAgendamento {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-
+  private readonly dialogService = inject(DialogService);
   private readonly clienteService = inject(ClienteService);
   private readonly servicoService = inject(ServicoService);
   private readonly agendamentoService = inject(AgendamentoService);
+
+  public readonly authService = inject(AuthService);
 
   public readonly clientes = signal<Cliente[]>([]);
   public readonly servicos = signal<Servico[]>([]);
@@ -36,13 +41,17 @@ export class NovoAgendamento {
   public readonly salvando = signal(false);
 
   public readonly form = this.fb.group({
-    clienteId: [null as number | null, [Validators.required]],
+    clienteId: [null as number | null],
     servicoId: [null as number | null, [Validators.required]],
     data: [null as Date | null, [Validators.required]],
     hora: [null as Date | null, [Validators.required]],
   });
 
   constructor() {
+    if (this.authService.isManicure()) {
+      this.form.controls.clienteId.addValidators(Validators.required);
+      this.form.controls.clienteId.updateValueAndValidity();
+    }
     this.carregarDados();
   }
 
@@ -51,13 +60,21 @@ export class NovoAgendamento {
       this.form.markAllAsTouched();
       return;
     }
+
     const formValue = this.form.getRawValue();
-    if (!formValue.clienteId || !formValue.servicoId || !formValue.data || !formValue.hora) {
+
+    if (!formValue.servicoId || !formValue.data || !formValue.hora) {
       this.form.markAllAsTouched();
       return;
     }
+
+    if (this.authService.isManicure() && !formValue.clienteId) {
+      this.form.controls.clienteId.markAsTouched();
+      return;
+    }
+
     const payload = {
-      clienteId: formValue.clienteId,
+      clienteId: this.authService.isManicure() && formValue.clienteId ? formValue.clienteId : undefined,
       servicoId: formValue.servicoId,
       data: this.formatarDataParaIso(formValue.data),
       hora: this.formatarHora(formValue.hora),
@@ -68,11 +85,12 @@ export class NovoAgendamento {
     this.agendamentoService.criar(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.salvando.set(false);
+        this.dialogService.success('Agendamento criado com sucesso!');
         this.router.navigate(['/agendamentos']);
       },
       error: (error) => {
         this.salvando.set(false);
-        alert(this.extrairMensagemErro(error));
+        this.dialogService.error(this.extrairMensagemErro(error));
       },
     });
   }
@@ -83,23 +101,21 @@ export class NovoAgendamento {
 
   private carregarDados(): void {
     this.carregando.set(true);
-    this.clienteService.listarAtivos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (clientes) => {
-        this.clientes.set(clientes.map(mapClienteResponseToModel));
-      },
-      error: () => {
-        alert('Não foi possível carregar as clientes.');
-      },
-    });
 
-    this.servicoService.listarAtivos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (servicos) => {
+    const clientes$ = this.authService.isManicure() ? this.clienteService.listarAtivos() : of([]);
+
+    forkJoin({
+      clientes: clientes$,
+      servicos: this.servicoService.listarAtivos(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ clientes, servicos }) => {
+        this.clientes.set(clientes.map(mapClienteResponseToModel));
         this.servicos.set(servicos.map(mapServicoResponseToModel));
         this.carregando.set(false);
       },
       error: () => {
         this.carregando.set(false);
-        alert('Não foi possível carregar os serviços.');
+        this.dialogService.error('Não foi possível carregar os dados do agendamento.');
       },
     });
   }

@@ -13,16 +13,17 @@
     </div>
     <div>
       <h2>Marcar horário</h2>
-      <p>Selecione a cliente e defina os detalhes do atendimento.</p>
+      <p>@if (authService.isManicure()) { Selecione a cliente e defina os detalhes do atendimento. } @else { Escolha o serviço, a data e o horário desejado. }</p>
     </div>
   </section>
 
   <form [formGroup]="form" (ngSubmit)="salvar()" class="form-layout">
+    @if (authService.isManicure()) {
     <div class="input-group">
       <label for="clienteId">Cliente *</label>
-      <p-select id="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" class="prime-input-override">
-      </p-select>
+      <p-select id="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" class="prime-input-override" />
     </div>
+    }
 
     <div class="row-group">
       <div class="input-group">

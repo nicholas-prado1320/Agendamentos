@@ -45,11 +45,11 @@
           <button type="button" class="action-button warning" aria-label="Cancelar agendamento" (click)="cancelarAgendamento(agendamento.id)">
             <i class="pi pi-times-circle"></i>
           </button>
-          }
-
+          } @if (authService.isManicure()) {
           <button type="button" class="action-button danger" aria-label="Excluir agendamento" (click)="removerAgendamento(agendamento.id)">
             <i class="pi pi-trash"></i>
           </button>
+          }
         </div>
       </div>
     </article>

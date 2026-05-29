@@ -5,6 +5,8 @@ import { AgendamentoService } from '../../core/service/agendamento.service';
 import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 import { Agendamento } from '../../core/models/agendamento.model';
 import { mapAgendamentoResponseToModel } from '../../core/mappers/agendamento.mapper';
+import { DialogService } from '../../core/service/dialog.service';
+import { AuthService } from '../../core/service/auth.service';
 
 type FiltroAgendamento = 'todos' | 'hoje' | 'semana';
 
@@ -20,6 +22,9 @@ export class Agendamentos {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly agendamentoService = inject(AgendamentoService);
+  private readonly dialogService = inject(DialogService);
+
+  public readonly authService = inject(AuthService);
 
   public readonly filtroSelecionado = signal<FiltroAgendamento>('todos');
   public readonly agendamentos = signal<Agendamento[]>([]);
@@ -54,60 +59,88 @@ export class Agendamentos {
   }
 
   concluirAgendamento(id: number): void {
-    const confirmou = confirm('Deseja marcar este agendamento como concluído?');
-    if (!confirmou) {
-      return;
-    }
-    this.agendamentoService.concluir(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (agendamentoAtualizado) => {
-        const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
-        this.agendamentos.update((agendamentos) =>
-          agendamentos.map((item) => (item.id === id ? agendamento : item))
-        );
-      },
-      error: () => {
-        alert('Não foi possível concluir o agendamento.');
+    this.dialogService.confirmDialog({
+      header: 'Concluir agendamento',
+      message: 'Deseja marcar este agendamento como concluído?',
+      icon: 'pi pi-check-circle',
+      acceptLabel: 'Sim, concluir',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.agendamentoService.concluir(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: (agendamentoAtualizado) => {
+            const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
+            this.agendamentos.update((agendamentos) => agendamentos.map((item) => (item.id === id ? agendamento : item)));
+            this.dialogService.success('O agendamento foi concluído com sucesso.', 'Agendamento concluído');
+          },
+          error: () => {
+            this.dialogService.error('Não foi possível concluir o agendamento.');
+          },
+        });
       },
     });
   }
 
   cancelarAgendamento(id: number): void {
-    const confirmou = confirm('Deseja cancelar este agendamento?');
-    if (!confirmou) {
-      return;
-    }
-    this.agendamentoService.cancelar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (agendamentoAtualizado) => {
-        const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
-        this.agendamentos.update((agendamentos) =>
-          agendamentos.map((item) => (item.id === id ? agendamento : item))
-        );
-      },
-      error: () => {
-        alert('Não foi possível cancelar o agendamento.');
+    this.dialogService.confirmDialog({
+      header: 'Cancelar agendamento',
+      message: 'Deseja cancelar este agendamento?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, cancelar',
+      rejectLabel: 'Voltar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.agendamentoService.cancelar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: (agendamentoAtualizado) => {
+            const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
+            this.agendamentos.update((agendamentos) => agendamentos.map((item) => (item.id === id ? agendamento : item)));
+            this.dialogService.success('O agendamento foi cancelado com sucesso.', 'Agendamento cancelado');
+          },
+          error: () => {
+            this.dialogService.error('Não foi possível cancelar o agendamento.');
+          },
+        });
       },
     });
   }
 
   removerAgendamento(id: number): void {
-    const confirmou = confirm('Deseja excluir este agendamento?');
-    if (!confirmou) {
+    if (this.authService.isCliente()) {
       return;
     }
-    this.agendamentoService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.agendamentos.update((agendamentos) =>
-          agendamentos.filter((agendamento) => agendamento.id !== id)
-        );
-      },
-      error: () => {
-        alert('Não foi possível excluir o agendamento.');
+    this.dialogService.confirmDialog({
+      header: 'Remover agendamento',
+      message: 'Deseja remover este agendamento? Ele será marcado como cancelado.',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, remover',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.agendamentoService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: () => {
+            this.agendamentos.update((agendamentos) =>
+              agendamentos.map((agendamento) =>
+                agendamento.id === id
+                  ? {
+                    ...agendamento,
+                    status: 'CANCELADO',
+                  }
+                  : agendamento
+              )
+            );
+            this.dialogService.success('O agendamento foi cancelado e mantido no histórico.', 'Agendamento removido');
+          },
+          error: () => {
+            this.dialogService.error('Não foi possível remover o agendamento.');
+          },
+        });
       },
     });
   }
 
   podeConcluir(status: string): boolean {
-    return status === 'AGENDADO';
+    return this.authService.isManicure() && status === 'AGENDADO';
   }
 
   podeCancelar(status: string): boolean {
