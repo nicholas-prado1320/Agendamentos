@@ -10,6 +10,7 @@ import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { ServicoService } from '../../core/service/servicos.service';
 import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
+import { DialogService } from '../../core/service/dialog.service';
 
 @Component({
   selector: 'app-novo-servico',
@@ -32,7 +33,7 @@ export class NovoServico {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly servicoService = inject(ServicoService);
-
+  private readonly dialogService = inject(DialogService);
   private readonly servicoId = Number(this.route.snapshot.queryParamMap.get('id')) || null;
 
   public readonly salvando = signal(false);
@@ -83,11 +84,12 @@ export class NovoServico {
       this.servicoService.atualizar(this.servicoId, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.salvando.set(false);
+          this.dialogService.success('Serviço atualizado com sucesso!');
           this.router.navigate(['/servicos']);
         },
         error: (error) => {
           this.salvando.set(false);
-          alert(this.extrairMensagemErro(error));
+          this.dialogService.error(this.extrairMensagemErro(error));
         },
       });
 
@@ -97,11 +99,12 @@ export class NovoServico {
     this.servicoService.criar(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.salvando.set(false);
+        this.dialogService.success('Serviço criado com sucesso!');
         this.router.navigate(['/servicos']);
       },
       error: (error) => {
         this.salvando.set(false);
-        alert(this.extrairMensagemErro(error));
+        this.dialogService.error(this.extrairMensagemErro(error));
       },
     });
   }
@@ -125,6 +128,7 @@ export class NovoServico {
         this.carregando.set(false);
       },
       error: () => {
+        this.dialogService.error('Não foi possível carregar o serviço.');
         this.carregando.set(false);
         this.router.navigate(['/servicos']);
       },

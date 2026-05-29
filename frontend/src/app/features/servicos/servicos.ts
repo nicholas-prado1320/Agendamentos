@@ -5,6 +5,8 @@ import { ServicoService } from '../../core/service/servicos.service';
 import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 import { Servico } from '../../core/models/servicos.model';
 import { mapServicoResponseToModel } from '../../core/mappers/servico.mapper';
+import { DialogService } from '../../core/service/dialog.service';
+import { AuthService } from '../../core/service/auth.service';
 
 type FiltroServico = 'ativos' | 'inativos' | 'todos';
 
@@ -19,10 +21,13 @@ export class Servicos {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly servicoService = inject(ServicoService);
+  private readonly dialogService = inject(DialogService);
 
   public readonly filtroSelecionado = signal<FiltroServico>('ativos');
   public readonly servicos = signal<Servico[]>([]);
   public readonly carregando = signal(false);
+
+  public readonly authService = inject(AuthService);
 
   public readonly filtros: { label: string; value: FiltroServico }[] = [
     { label: 'Ativos', value: 'ativos' },
@@ -33,8 +38,11 @@ export class Servicos {
   menuAberto = false;
 
   public readonly servicosFiltrados = computed(() => {
-    const filtro = this.filtroSelecionado();
     const servicos = this.servicos();
+    if (this.authService.isCliente()) {
+      return servicos.filter((servico) => servico.ativo);
+    }
+    const filtro = this.filtroSelecionado();
     if (filtro === 'ativos') {
       return servicos.filter((servico) => servico.ativo);
     }
@@ -69,19 +77,25 @@ export class Servicos {
   }
 
   inativarServico(id: number): void {
-    const confirmou = confirm('Deseja inativar este serviço?');
-    if (!confirmou) {
-      return;
-    }
-    this.servicoService.inativar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (servicoAtualizado) => {
-        const servico = mapServicoResponseToModel(servicoAtualizado);
-        this.servicos.update((servicos) =>
-          servicos.map((item) => (item.id === id ? servico : item))
-        );
-      },
-      error: () => {
-        alert('Não foi possível inativar o serviço.');
+    this.dialogService.confirmDialog({
+      header: 'Inativar serviço',
+      message: 'Deseja inativar este serviço?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, inativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.servicoService.inativar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: (servicoAtualizado) => {
+            const servico = mapServicoResponseToModel(servicoAtualizado);
+            this.servicos.update((servicos) => servicos.map((item) => (item.id === id ? servico : item)));
+            this.dialogService.success('O serviço foi inativado com sucesso.', 'Serviço inativado');
+          },
+          error: () => {
+            this.dialogService.error('Não foi possível inativar o serviço.');
+          },
+        });
       },
     });
   }
@@ -90,12 +104,11 @@ export class Servicos {
     this.servicoService.ativar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (servicoAtualizado) => {
         const servico = mapServicoResponseToModel(servicoAtualizado);
-        this.servicos.update((servicos) =>
-          servicos.map((item) => (item.id === id ? servico : item))
-        );
+        this.servicos.update((servicos) => servicos.map((item) => (item.id === id ? servico : item)));
+        this.dialogService.success('O serviço foi ativado com sucesso.', 'Serviço ativado');
       },
       error: () => {
-        alert('Não foi possível ativar o serviço.');
+        this.dialogService.error('Não foi possível ativar o serviço.');
       },
     });
   }

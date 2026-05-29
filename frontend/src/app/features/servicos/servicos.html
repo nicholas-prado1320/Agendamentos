@@ -8,16 +8,22 @@
 
     <h1>Serviços</h1>
 
+    @if (authService.isManicure()) {
     <button type="button" class="icon-button add-button" aria-label="Novo serviço" (click)="novoServico()">
       <i class="pi pi-plus"></i>
     </button>
+    } @else {
+    <div class="icon-placeholder"></div>
+    }
   </header>
 
+  @if (authService.isManicure()) {
   <section class="filters-section">
     @for (filtro of filtros; track filtro.value) {
     <button type="button" class="filter-chip" [class.active]="filtroSelecionado() === filtro.value" (click)="alterarFiltro(filtro.value)">{{ filtro.label }}</button>
     }
   </section>
+  }
 
   <section class="services-list">
     @for (servico of servicosFiltrados(); track servico.id) {
@@ -48,6 +54,7 @@
         </div>
       </div>
 
+      @if (authService.isManicure()) {
       <div class="service-actions">
         <button type="button" aria-label="Atualizar serviço" (click)="editarServico(servico.id)">
           <i class="pi pi-pencil"></i>
@@ -63,6 +70,7 @@
         </button>
         }
       </div>
+      }
     </article>
     } @empty {
     <div class="empty-state">
