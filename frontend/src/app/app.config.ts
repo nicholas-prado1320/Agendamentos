@@ -2,6 +2,7 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideHttpClient } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import { PeonyTheme } from './core/theme/peony-theme';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -11,6 +12,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes), provideClientHydration(withEventReplay()),
+    provideHttpClient(),
     providePrimeNG({
       theme: {
         preset: PeonyTheme,
