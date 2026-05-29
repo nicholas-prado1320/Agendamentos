@@ -6,7 +6,7 @@ export interface ServicoRequest {
 }
 
 export interface ServicoResponse {
-  id: string;
+  id: number;
   nome: string;
   descricao?: string;
   duracao: string;

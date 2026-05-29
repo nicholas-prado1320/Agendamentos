@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
-
 import { ServicoService } from '../../core/service/servicos.service';
+import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
 
 @Component({
   selector: 'app-novo-servico',
@@ -29,13 +30,16 @@ export class NovoServico {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly servicoService = inject(ServicoService);
 
-  private readonly servicoId = this.route.snapshot.queryParamMap.get('id');
+  private readonly servicoId = Number(this.route.snapshot.queryParamMap.get('id')) || null;
 
-  readonly modoEdicao = computed(() => !!this.servicoId);
+  public readonly salvando = signal(false);
+  public readonly carregando = signal(false);
+  public readonly modoEdicao = computed(() => !!this.servicoId);
 
-  readonly opcoesDuracao = signal<string[]>([
+  public readonly opcoesDuracao = signal<string[]>([
     '30 min',
     '45 min',
     '1h',
@@ -45,7 +49,7 @@ export class NovoServico {
     '3h',
   ]);
 
-  readonly form = this.fb.group({
+  public readonly form = this.fb.group({
     nome: ['', [Validators.required]],
     descricao: [''],
     duracao: ['', [Validators.required]],
@@ -53,25 +57,9 @@ export class NovoServico {
   });
 
   constructor() {
-    if (!this.servicoId) {
-      return;
+    if (this.servicoId) {
+      this.carregarServico(this.servicoId);
     }
-
-    const servico = this.servicoService.buscarPorId(this.servicoId);
-
-    if (!servico) {
-      this.router.navigate(['/servicos']);
-      return;
-    }
-
-    this.form.patchValue({
-      nome: servico.nome,
-      descricao: servico.descricao ?? '',
-      duracao: servico.duracao,
-      preco: servico.preco,
-    });
-
-    this.adicionarDuracaoNaLista(servico.duracao);
   }
 
   salvar(): void {
@@ -79,48 +67,92 @@ export class NovoServico {
       this.form.markAllAsTouched();
       return;
     }
-
     const dados = this.form.getRawValue();
     const duracaoTratada = dados.duracao.trim();
-
     this.adicionarDuracaoNaLista(duracaoTratada);
-
     const payload = {
-      ...dados,
+      nome: dados.nome.trim(),
+      descricao: dados.descricao.trim() || undefined,
       duracao: duracaoTratada,
+      preco: dados.preco,
     };
 
+    this.salvando.set(true);
+
     if (this.servicoId) {
-      this.servicoService.editarServico({
-        id: this.servicoId,
-        ...payload,
+      this.servicoService.atualizar(this.servicoId, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: () => {
+          this.salvando.set(false);
+          this.router.navigate(['/servicos']);
+        },
+        error: (error) => {
+          this.salvando.set(false);
+          alert(this.extrairMensagemErro(error));
+        },
       });
 
-      this.router.navigate(['/servicos']);
       return;
     }
 
-    this.servicoService.adicionarServico(payload);
-    this.router.navigate(['/servicos']);
+    this.servicoService.criar(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.router.navigate(['/servicos']);
+      },
+      error: (error) => {
+        this.salvando.set(false);
+        alert(this.extrairMensagemErro(error));
+      },
+    });
   }
 
   cancelar(): void {
     this.router.navigate(['/servicos']);
   }
 
+  private carregarServico(id: number): void {
+    this.carregando.set(true);
+
+    this.servicoService.buscarPorId(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (servico) => {
+        this.form.patchValue({
+          nome: servico.nome,
+          descricao: servico.descricao ?? '',
+          duracao: servico.duracao,
+          preco: servico.preco,
+        });
+        this.adicionarDuracaoNaLista(servico.duracao);
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.carregando.set(false);
+        this.router.navigate(['/servicos']);
+      },
+    });
+  }
+
   private adicionarDuracaoNaLista(duracao: string): void {
     const valor = duracao.trim();
-
     if (!valor) {
       return;
     }
-
-    const jaExiste = this.opcoesDuracao().some((item) => item.toLowerCase() === valor.toLowerCase());
-
+    const jaExiste = this.opcoesDuracao().some(
+      (item) => item.toLowerCase() === valor.toLowerCase()
+    );
     if (jaExiste) {
       return;
     }
-
     this.opcoesDuracao.update((lista) => [...lista, valor]);
+  }
+
+  private extrairMensagemErro(error: HttpErrorResponse): string {
+    const apiError = error.error as ApiErrorResponse | undefined;
+    if (apiError?.details?.length) {
+      return apiError.details.join('\n');
+    }
+    if (apiError?.message) {
+      return apiError.message;
+    }
+    return 'Não foi possível salvar o serviço.';
   }
 }
