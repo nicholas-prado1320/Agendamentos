@@ -1,23 +1,12 @@
-import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-// import { AuthService } from '../services/auth.service';
-// import { DialogService } from '../services/dialog.service';
-import { isPlatformBrowser } from '@angular/common';
+import { inject } from '@angular/core';
+import { AuthService } from '../service/auth.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
-    // const authService = inject(AuthService);
+export const authGuard: CanActivateFn = () => {
+    const authService = inject(AuthService);
     const router = inject(Router);
-    // const dialogService = inject(DialogService);
-    const platformId = inject(PLATFORM_ID);
-
-    if (!isPlatformBrowser(platformId)) {
+    if (authService.token) {
         return true;
     }
-
-    // const currentUser = authService.getUser();
-    // if (!currentUser) {
-    //     router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-    //     return false;
-    // }
-    return true;
+    return router.createUrlTree(['/login']);
 };
