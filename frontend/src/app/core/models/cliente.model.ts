@@ -1,7 +1,8 @@
 export interface Cliente {
-  id: string;
+  id: number;
   nomeCompleto: string;
   apelido?: string;
   whatsapp: string;
   iniciais: string;
+  ativo: boolean;
 }

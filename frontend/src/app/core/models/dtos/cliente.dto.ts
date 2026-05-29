@@ -5,8 +5,9 @@ export interface ClienteRequest {
 }
 
 export interface ClienteResponse {
-  id: string;
+  id: number;
   nomeCompleto: string;
   apelido?: string;
   whatsapp: string;
+  ativo: boolean;
 }
