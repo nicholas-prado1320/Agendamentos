@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
+import { AuthService } from '../../core/service/auth.service';
 
-type DrawerRoute = 'home' | 'novo-agendamento' | 'agendamentos' | 'clientes' | 'servicos';
+type DrawerRoute = 'home' | 'novo-agendamento' | 'agendamentos' | 'clientes' | 'servicos' | 'novo-cliente' | 'novo-servico';
 
 @Component({
   selector: 'app-drawer',
@@ -14,6 +15,8 @@ type DrawerRoute = 'home' | 'novo-agendamento' | 'agendamentos' | 'clientes' | '
 export class AppDrawerComponent {
   private readonly router = inject(Router);
 
+  public readonly authService = inject(AuthService);
+
   visible = model(false);
 
   private rotaPendente: string | null = null;
@@ -24,6 +27,8 @@ export class AppDrawerComponent {
     agendamentos: '/agendamentos',
     clientes: '/clientes',
     servicos: '/servicos',
+    'novo-cliente': '/novo-cliente',
+    'novo-servico': '/novo-servico',
   };
 
   alterarVisibilidade(aberto: boolean): void {
@@ -45,6 +50,11 @@ export class AppDrawerComponent {
     window.setTimeout(() => {
       this.finalizarNavegacao();
     }, 250);
+  }
+
+  sair(): void {
+    this.visible.set(false);
+    this.authService.logout();
   }
 
   finalizarNavegacao(): void {

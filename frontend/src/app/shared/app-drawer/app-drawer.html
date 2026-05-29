@@ -15,24 +15,31 @@
         <span>Início</span>
       </button>
 
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('novo-agendamento')" (click)="navegarPara('novo-agendamento')">
+      <!-- <button type="button" class="drawer-item" [class.active]="rotaAtiva('novo-agendamento')" (click)="navegarPara('novo-agendamento')">
         <i class="pi pi-calendar-plus"></i>
         <span>Novo agendamento</span>
-      </button>
+      </button> -->
 
       <button type="button" class="drawer-item" [class.active]="rotaAtiva('agendamentos')" (click)="navegarPara('agendamentos')">
         <i class="pi pi-calendar"></i>
         <span>Agendamentos</span>
       </button>
 
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('servicos')" (click)="navegarPara('servicos')">
+        <i class="pi pi-sparkles"></i>
+        <span>Serviços</span>
+      </button>
+
+      @if (authService.isManicure()) {
       <button type="button" class="drawer-item" [class.active]="rotaAtiva('clientes')" (click)="navegarPara('clientes')">
         <i class="pi pi-users"></i>
         <span>Clientes</span>
       </button>
+      }
 
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('servicos')" (click)="navegarPara('servicos')">
-        <i class="pi pi-sparkles"></i>
-        <span>Serviços</span>
+      <button type="button" class="drawer-item" (click)="sair()">
+        <i class="pi pi-sign-out"></i>
+        <span>Sair</span>
       </button>
     </nav>
   </div>
