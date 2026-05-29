@@ -3,11 +3,29 @@
 /tmp
 /out-tsc
 /bazel-out
+target/
+backend/target/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
 
 # Node
 node_modules/
+frontend/node_modules/
 npm-debug.log
 yarn-error.log
+
+# Java / Maven
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Properties locais com segredos
+backend/src/main/resources/application-dev.properties
+backend/src/main/resources/application-local.properties
+
+# Environment files
+.env
+.env.*
+!.env.example
 
 # IDEs and editors
 .idea/
@@ -26,6 +44,9 @@ yarn-error.log
 !.vscode/extensions.json
 !.vscode/mcp.json
 .history/*
+
+# Logs
+*.log
 
 # Miscellaneous
 .angular/
