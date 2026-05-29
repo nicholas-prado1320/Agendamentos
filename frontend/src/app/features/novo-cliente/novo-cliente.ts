@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ClienteService } from '../../core/service/cliente.service';
 import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
+import { DialogService } from '../../core/service/dialog.service';
 
 @Component({
   selector: 'app-novo-cliente',
@@ -19,6 +20,7 @@ export class NovoCliente {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly clienteService = inject(ClienteService);
+  private readonly dialogService = inject(DialogService);
 
   private readonly clienteId = Number(this.route.snapshot.queryParamMap.get('id')) || null;
 
@@ -56,11 +58,12 @@ export class NovoCliente {
       this.clienteService.atualizar(this.clienteId, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.salvando.set(false);
+          this.dialogService.success('Cliente atualizado com sucesso!');
           this.router.navigate(['/clientes']);
         },
         error: (error) => {
           this.salvando.set(false);
-          alert(this.extrairMensagemErro(error));
+          this.dialogService.error(this.extrairMensagemErro(error));
         },
       });
       return;
@@ -68,11 +71,12 @@ export class NovoCliente {
     this.clienteService.criar(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.salvando.set(false);
+        this.dialogService.success('Cliente criado com sucesso!');
         this.router.navigate(['/clientes']);
       },
       error: (error) => {
         this.salvando.set(false);
-        alert(this.extrairMensagemErro(error));
+        this.dialogService.error(this.extrairMensagemErro(error));
       },
     });
   }
@@ -94,6 +98,7 @@ export class NovoCliente {
       },
       error: () => {
         this.carregando.set(false);
+        this.dialogService.error('Não foi possível carregar o cliente.');
         this.router.navigate(['/clientes']);
       },
     });

@@ -6,6 +6,7 @@ import { ClienteService } from '../../core/service/cliente.service';
 import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 import { Cliente } from '../../core/models/cliente.model';
 import { mapClienteResponseToModel } from '../../core/mappers/cliente.mapper';
+import { DialogService } from '../../core/service/dialog.service';
 
 @Component({
   selector: 'app-clientes',
@@ -18,6 +19,7 @@ export class Clientes {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly clienteService = inject(ClienteService);
+  private readonly dialogService = inject(DialogService);
 
   public readonly termoBusca = signal('');
   public readonly clientes = signal<Cliente[]>([]);
@@ -63,16 +65,25 @@ export class Clientes {
   }
 
   removerCliente(id: number): void {
-    const confirmou = confirm('Deseja remover esta cliente?');
-    if (!confirmou) {
-      return;
-    }
-    this.clienteService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.clientes.update((clientes) => clientes.filter((cliente) => cliente.id !== id));
-      },
-      error: () => {
-        alert('Não foi possível remover a cliente.');
+    this.dialogService.confirmDialog({
+      header: 'Remover cliente',
+      message: 'Deseja remover esta cliente?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, remover',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.clienteService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: () => {
+            this.clientes.update((clientes) => clientes.filter((cliente) => cliente.id !== id)
+            );
+            this.dialogService.success('A cliente foi inativada com sucesso.', 'Cliente removida');
+          },
+          error: () => {
+            this.dialogService.error('Não foi possível remover a cliente.');
+          },
+        });
       },
     });
   }
