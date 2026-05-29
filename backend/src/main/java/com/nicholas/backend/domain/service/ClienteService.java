@@ -13,8 +13,11 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     public List<ClienteResponse> listar() {
+        validarManicure();
+
         return clienteRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -22,6 +25,8 @@ public class ClienteService {
     }
 
     public List<ClienteResponse> listarAtivos() {
+        validarManicure();
+
         return clienteRepository.findByAtivoTrue()
                 .stream()
                 .map(this::toResponse)
@@ -29,12 +34,14 @@ public class ClienteService {
     }
 
     public ClienteResponse buscarPorId(Long id) {
+        validarManicure();
         Cliente cliente = buscarEntidadePorId(id);
 
         return toResponse(cliente);
     }
 
     public ClienteResponse criar(ClienteRequest request) {
+        validarManicure();
         Cliente cliente = Cliente.builder()
                 .nomeCompleto(request.nomeCompleto())
                 .apelido(request.apelido())
@@ -47,6 +54,7 @@ public class ClienteService {
     }
 
     public ClienteResponse atualizar(Long id, ClienteRequest request) {
+        validarManicure();
         Cliente cliente = buscarEntidadePorId(id);
 
         cliente.setNomeCompleto(request.nomeCompleto());
@@ -59,13 +67,21 @@ public class ClienteService {
     }
 
     public void remover(Long id) {
+        validarManicure();
         Cliente cliente = buscarEntidadePorId(id);
-        clienteRepository.delete(cliente);
+        cliente.setAtivo(false);
+        clienteRepository.save(cliente);
     }
 
     public Cliente buscarEntidadePorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrada."));
+    }
+
+    private void validarManicure() {
+        if (!usuarioAutenticadoService.isManicure()) {
+            throw new RuntimeException("Você não tem permissão para realizar esta ação.");
+        }
     }
 
     private ClienteResponse toResponse(Cliente cliente) {

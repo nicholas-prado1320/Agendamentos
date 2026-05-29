@@ -13,8 +13,16 @@ import java.util.List;
 public class ServicoService {
 
     private final ServicoRepository servicoRepository;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     public List<ServicoResponse> listar() {
+        if (usuarioAutenticadoService.isCliente()) {
+            return servicoRepository.findByAtivoTrue()
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
+
         return servicoRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -35,6 +43,8 @@ public class ServicoService {
     }
 
     public ServicoResponse criar(ServicoRequest request) {
+        validarManicure();
+
         Servico servico = Servico.builder()
                 .nome(request.nome())
                 .descricao(request.descricao())
@@ -48,6 +58,8 @@ public class ServicoService {
     }
 
     public ServicoResponse atualizar(Long id, ServicoRequest request) {
+        validarManicure();
+
         Servico servico = buscarEntidadePorId(id);
 
         servico.setNome(request.nome());
@@ -61,6 +73,8 @@ public class ServicoService {
     }
 
     public ServicoResponse ativar(Long id) {
+        validarManicure();
+
         Servico servico = buscarEntidadePorId(id);
 
         servico.setAtivo(true);
@@ -69,6 +83,8 @@ public class ServicoService {
     }
 
     public ServicoResponse inativar(Long id) {
+        validarManicure();
+
         Servico servico = buscarEntidadePorId(id);
 
         servico.setAtivo(false);
@@ -79,6 +95,12 @@ public class ServicoService {
     public Servico buscarEntidadePorId(Long id) {
         return servicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
+    }
+
+    private void validarManicure() {
+        if (!usuarioAutenticadoService.isManicure()) {
+            throw new RuntimeException("Você não tem permissão para realizar esta ação.");
+        }
     }
 
     private ServicoResponse toResponse(Servico servico) {
