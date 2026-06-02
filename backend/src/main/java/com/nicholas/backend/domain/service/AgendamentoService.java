@@ -206,6 +206,17 @@ public class AgendamentoService {
             throw new RuntimeException("Somente agendamentos agendados podem ser iniciados.");
         }
 
+        LocalDate hoje = LocalDate.now();
+        LocalTime agora = LocalTime.now();
+
+        if (!agendamento.getData().isEqual(hoje)) {
+            throw new RuntimeException("Este atendimento só pode ser iniciado na data agendada.");
+        }
+
+        if (agendamento.getHora().isAfter(agora)) {
+            throw new RuntimeException("Este atendimento ainda não pode ser iniciado antes do horário agendado.");
+        }
+
         agendamento.setStatus(StatusAgendamento.EM_ATENDIMENTO);
 
         return toResponse(agendamentoRepository.save(agendamento));
