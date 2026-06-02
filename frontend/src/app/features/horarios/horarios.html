@@ -1,0 +1,70 @@
+<app-drawer [(visible)]="menuAberto" />
+
+<main class="page-container">
+  <header class="toolbar">
+    <button type="button" class="icon-button" aria-label="Abrir menu" (click)="abrirMenu()">
+      <i class="pi pi-bars"></i>
+    </button>
+
+    <h1>Horários</h1>
+
+    <button type="button" class="icon-button" aria-label="Voltar" (click)="voltar()">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+  </header>
+
+  <section class="header-info">
+    <div class="icon-wrapper">
+      <i class="pi pi-clock"></i>
+    </div>
+
+    <div>
+      <h2>Quadro de atendimento</h2>
+      <p>Cadastre os dias e horários em que a manicure atende.</p>
+    </div>
+  </section>
+
+  <section class="schedule-list">
+    @for (horario of horarios(); track horario.diaSemana; let i = $index) {
+    <article class="schedule-card" [class.disabled]="!horario.ativo" (click)="alterarAtivo(i, !horario.ativo)">
+      <div class="schedule-header">
+        <div>
+          <strong>{{ horario.label }}</strong>
+
+          @if (horario.ativo) {
+          <span>Atendimento ativo</span>
+          } @else {
+          <span>Sem atendimento</span>
+          }
+        </div>
+
+        <p-checkbox [ngModel]="horario.ativo" [binary]="true" (click)="$event.stopPropagation()" (ngModelChange)="alterarAtivo(i, $event)" />
+      </div>
+
+      @if (horario.ativo) {
+      <div class="time-grid">
+        <div class="input-group">
+          <label>Início</label>
+
+          <p-datepicker [(ngModel)]="horario.horaInicio" [timeOnly]="true" hourFormat="24" placeholder="08:00" (click)="$event.stopPropagation()" class="prime-input-override" />
+        </div>
+
+        <div class="input-group">
+          <label>Fim</label>
+
+          <p-datepicker [(ngModel)]="horario.horaFim" [timeOnly]="true" hourFormat="24" placeholder="18:00" (click)="$event.stopPropagation()" class="prime-input-override" />
+        </div>
+      </div>
+      }
+    </article>
+    }
+  </section>
+
+  <div class="actions">
+    <button type="button" class="btn-primary" [disabled]="salvando()" (click)="salvar()">
+      <i class="pi pi-save"></i>
+
+      @if (salvando()) { Salvando... } @else { Salvar horários }
+    </button>
+  </div>
+</main>

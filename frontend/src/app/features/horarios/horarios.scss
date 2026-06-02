@@ -1,0 +1,206 @@
+@use '../../../styles/tokens' as *;
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: $color-bg;
+  font-family: $font-main;
+}
+
+.page-container {
+  width: min(100%, 520px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 6rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    color: $color-brown-dark;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+}
+
+.icon-button {
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 1.1rem;
+  background: transparent;
+  color: $color-copper;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .icon-wrapper {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: #fff0eb;
+    color: $color-primary;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    margin: 0 0 0.25rem;
+    color: $color-brown-dark;
+    font-size: 1.15rem;
+  }
+
+  p {
+    margin: 0;
+    color: $color-brown-soft;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+.schedule-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.schedule-card {
+  padding: 1rem;
+  cursor: pointer;
+  border: 1px solid rgba(196, 126, 93, 0.14);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 14px 30px rgba(166, 110, 82, 0.1);
+
+  &.disabled {
+    opacity: 0.72;
+  }
+}
+
+.schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  strong {
+    display: block;
+    color: $color-brown-dark;
+    font-size: 1rem;
+  }
+
+  span {
+    display: block;
+    margin-top: 0.2rem;
+    color: $color-brown-soft;
+    font-size: 0.85rem;
+  }
+}
+
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.input-group {
+  display: grid;
+  gap: 0.45rem;
+
+  label {
+    color: $color-brown-dark;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+}
+
+.actions {
+  margin-top: 1.5rem;
+}
+
+.btn-primary {
+  width: 100%;
+  min-height: 3.4rem;
+  border: 0;
+  border-radius: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+  font-size: 1rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+:host ::ng-deep {
+  .prime-input-override {
+    display: block;
+    width: 100%;
+
+    .p-datepicker {
+      width: 100%;
+      min-height: 3.4rem;
+      border: 1px solid rgba(196, 126, 93, 0.14);
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .p-datepicker-input {
+      width: 100%;
+      min-height: 3.4rem;
+      padding: 0 1rem;
+      color: $color-brown-dark;
+      background: transparent;
+      border: 0;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+  }
+  .p-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .p-checkbox-box {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-color: rgba(196, 126, 93, 0.45);
+  }
+}
+
+@include respond-up(md) {
+  .page-container {
+    width: min(100%, 720px);
+  }
+
+  .schedule-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .actions {
+    max-width: 18rem;
+    margin-left: auto;
+  }
+}
