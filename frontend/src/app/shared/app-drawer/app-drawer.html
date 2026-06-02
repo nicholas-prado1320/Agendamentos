@@ -35,7 +35,14 @@
         <i class="pi pi-users"></i>
         <span>Clientes</span>
       </button>
-      }
+      } 
+      
+      @if (authService.isManicure()) {
+      <button type="button" class="drawer-item" [class.active]="rotaAtiva('horarios')" (click)="navegarPara('horarios')">
+        <i class="pi pi-clock"></i>
+        <span>Horários</span>
+      </button>
+      } 
 
       <button type="button" class="drawer-item" (click)="sair()">
         <i class="pi pi-sign-out"></i>

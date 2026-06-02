@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
 import { AuthService } from '../../core/service/auth.service';
 
-type DrawerRoute = 'home' | 'novo-agendamento' | 'agendamentos' | 'clientes' | 'servicos' | 'novo-cliente' | 'novo-servico';
+type DrawerRoute = 'home' | 'novo-agendamento' | 'agendamentos' | 'clientes' | 'servicos' | 'novo-cliente' | 'novo-servico' | 'horarios';
 
 @Component({
   selector: 'app-drawer',
@@ -29,6 +29,7 @@ export class AppDrawerComponent {
     servicos: '/servicos',
     'novo-cliente': '/novo-cliente',
     'novo-servico': '/novo-servico',
+    horarios: '/horarios',
   };
 
   alterarVisibilidade(aberto: boolean): void {
