@@ -291,12 +291,28 @@ public class AgendamentoService {
             throw new RuntimeException("O serviço selecionado está inativo.");
         }
 
+        if (data.isBefore(LocalDate.now())) {
+            throw new RuntimeException("Não é possível listar horários para uma data passada.");
+        }
+
         var horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(data.getDayOfWeek());
 
         int duracaoNovoServico = converterDuracaoParaMinutos(servico.getDuracao());
 
         LocalTime inicioExpediente = horarioAtendimento.getHoraInicio();
         LocalTime fimExpediente = horarioAtendimento.getHoraFim();
+
+        if (data.isEqual(LocalDate.now())) {
+            LocalTime agora = LocalTime.now().withSecond(0).withNano(0);
+
+            if (agora.isAfter(inicioExpediente)) {
+                inicioExpediente = arredondarParaProximaHora(agora);
+            }
+        }
+
+        if (!inicioExpediente.isBefore(fimExpediente)) {
+            return List.of();
+        }
 
         List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatusInOrderByHoraAsc(
                 data,
@@ -344,6 +360,18 @@ public class AgendamentoService {
         );
 
         return horariosDisponiveis;
+    }
+
+    private LocalTime arredondarParaProximaHora(LocalTime horario) {
+        if (horario.getMinute() == 0) {
+            return horario.withSecond(0).withNano(0);
+        }
+
+        return horario
+                .plusHours(1)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0);
     }
 
     private void adicionarHorariosNoIntervalo(
