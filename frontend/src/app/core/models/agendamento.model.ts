@@ -1,11 +1,17 @@
-import { Cliente } from './cliente.model';
-import { Servico } from './servicos.model';
+import { StatusAgendamento } from './dtos/agendamento.dto';
 
-export type StatusAgendamento = 'AGENDADO' | 'CONCLUIDO' | 'CANCELADO';
+export interface ClienteAgendamento {
+  id: number;
+  nomeCompleto: string;
+  apelido: string;
+  iniciais: string;
+}
 
-export type ClienteAgendamento = Pick<Cliente,'id' | 'nomeCompleto' | 'apelido' | 'iniciais'>;
-
-export type ServicoAgendamento = Pick<Servico, 'id' | 'nome' | 'preco'>;
+export interface ServicoAgendamento {
+  id: number;
+  nome: string;
+  preco: number;
+}
 
 export interface Agendamento {
   id: number;

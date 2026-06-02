@@ -5,6 +5,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
+import { forkJoin, of } from 'rxjs';
+
 import { ClienteService } from '../../core/service/cliente.service';
 import { AgendamentoService } from '../../core/service/agendamento.service';
 import { ServicoService } from '../../core/service/servicos.service';
@@ -15,7 +17,11 @@ import { mapClienteResponseToModel } from '../../core/mappers/cliente.mapper';
 import { mapServicoResponseToModel } from '../../core/mappers/servico.mapper';
 import { DialogService } from '../../core/service/dialog.service';
 import { AuthService } from '../../core/service/auth.service';
-import { forkJoin, of } from 'rxjs';
+
+interface HorarioOpcao {
+  label: string;
+  value: string;
+}
 
 @Component({
   selector: 'app-novo-agendamento',
@@ -37,14 +43,20 @@ export class NovoAgendamento {
 
   public readonly clientes = signal<Cliente[]>([]);
   public readonly servicos = signal<Servico[]>([]);
+  public readonly horariosDisponiveis = signal<HorarioOpcao[]>([]);
+
   public readonly carregando = signal(false);
+  public readonly carregandoHorarios = signal(false);
   public readonly salvando = signal(false);
+  public readonly temServicoEDataSelecionados = signal(false);
+
+  public readonly dataMinima = new Date();
 
   public readonly form = this.fb.group({
     clienteId: [null as number | null],
     servicoId: [null as number | null, [Validators.required]],
     data: [null as Date | null, [Validators.required]],
-    hora: [null as Date | null, [Validators.required]],
+    hora: [null as string | null, [Validators.required]],
   });
 
   constructor() {
@@ -52,7 +64,16 @@ export class NovoAgendamento {
       this.form.controls.clienteId.addValidators(Validators.required);
       this.form.controls.clienteId.updateValueAndValidity();
     }
+
     this.carregarDados();
+
+    this.form.controls.servicoId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.carregarHorariosDisponiveis());
+
+    this.form.controls.data.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.carregarHorariosDisponiveis());
   }
 
   salvar(): void {
@@ -68,31 +89,38 @@ export class NovoAgendamento {
       return;
     }
 
-    if (this.authService.isManicure() && !formValue.clienteId) {
-      this.form.controls.clienteId.markAsTouched();
+    const clienteId = this.authService.isManicure()
+      ? formValue.clienteId
+      : this.authService.clienteId();
+
+    if (!clienteId) {
+      this.dialogService.error('Cliente não encontrado para este usuário.');
       return;
     }
 
     const payload = {
-      clienteId: this.authService.isManicure() && formValue.clienteId ? formValue.clienteId : undefined,
+      clienteId,
       servicoId: formValue.servicoId,
       data: this.formatarDataParaIso(formValue.data),
-      hora: this.formatarHora(formValue.hora),
+      hora: formValue.hora,
     };
 
     this.salvando.set(true);
 
-    this.agendamentoService.criar(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.salvando.set(false);
-        this.dialogService.success('Agendamento criado com sucesso!');
-        this.router.navigate(['/agendamentos']);
-      },
-      error: (error) => {
-        this.salvando.set(false);
-        this.dialogService.error(this.extrairMensagemErro(error));
-      },
-    });
+    this.agendamentoService
+      .criar(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.salvando.set(false);
+          this.dialogService.success('Agendamento criado com sucesso!');
+          this.router.navigate(['/agendamentos']);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.salvando.set(false);
+          this.dialogService.error(this.extrairMensagemErro(error));
+        },
+      });
   }
 
   cancelar(): void {
@@ -107,40 +135,79 @@ export class NovoAgendamento {
     forkJoin({
       clientes: clientes$,
       servicos: this.servicoService.listarAtivos(),
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ({ clientes, servicos }) => {
-        this.clientes.set(clientes.map(mapClienteResponseToModel));
-        this.servicos.set(servicos.map(mapServicoResponseToModel));
-        this.carregando.set(false);
-      },
-      error: () => {
-        this.carregando.set(false);
-        this.dialogService.error('Não foi possível carregar os dados do agendamento.');
-      },
-    });
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ clientes, servicos }) => {
+          this.clientes.set(clientes.map(mapClienteResponseToModel));
+          this.servicos.set(servicos.map(mapServicoResponseToModel));
+          this.carregando.set(false);
+        },
+        error: () => {
+          this.carregando.set(false);
+          this.dialogService.error('Não foi possível carregar os dados do agendamento.');
+        },
+      });
+  }
+
+  private carregarHorariosDisponiveis(): void {
+    const formValue = this.form.getRawValue();
+
+    this.form.controls.hora.setValue(null);
+    this.horariosDisponiveis.set([]);
+
+    if (!formValue.servicoId || !formValue.data) {
+      this.temServicoEDataSelecionados.set(false);
+      return;
+    }
+
+    this.temServicoEDataSelecionados.set(true);
+
+    const data = this.formatarDataParaIso(formValue.data);
+
+    this.carregandoHorarios.set(true);
+
+    this.agendamentoService
+      .listarHorariosDisponiveis(formValue.servicoId, data)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (horarios) => {
+          this.horariosDisponiveis.set(
+            horarios.map((horario) => ({
+              label: horario.hora,
+              value: horario.hora,
+            }))
+          );
+
+          this.carregandoHorarios.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.carregandoHorarios.set(false);
+          this.horariosDisponiveis.set([]);
+          this.dialogService.error(this.extrairMensagemErro(error));
+        },
+      });
   }
 
   private formatarDataParaIso(data: Date): string {
     const ano = data.getFullYear();
     const mes = String(data.getMonth() + 1).padStart(2, '0');
     const dia = String(data.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-  }
 
-  private formatarHora(data: Date): string {
-    const hora = String(data.getHours()).padStart(2, '0');
-    const minuto = String(data.getMinutes()).padStart(2, '0');
-    return `${hora}:${minuto}`;
+    return `${ano}-${mes}-${dia}`;
   }
 
   private extrairMensagemErro(error: HttpErrorResponse): string {
     const apiError = error.error as ApiErrorResponse | undefined;
+
     if (apiError?.details?.length) {
       return apiError.details.join('\n');
     }
+
     if (apiError?.message) {
       return apiError.message;
     }
+
     return 'Não foi possível criar o agendamento.';
   }
 }

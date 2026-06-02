@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AgendamentoRequest, AgendamentoResponse } from '../models/dtos/agendamento.dto';
+import { AgendamentoRequest, AgendamentoResponse, HorarioDisponivelResponse } from '../models/dtos/agendamento.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -23,8 +23,20 @@ export class AgendamentoService {
     return this.http.get<AgendamentoResponse[]>(`${this.apiUrl}/semana`);
   }
 
+  listarHistorico(): Observable<AgendamentoResponse[]> {
+    return this.http.get<AgendamentoResponse[]>(`${this.apiUrl}/historico`);
+  }
+
+  listarHorariosDisponiveis(servicoId: number, data: string): Observable<HorarioDisponivelResponse[]> {
+    return this.http.get<HorarioDisponivelResponse[]>(`${this.apiUrl}/horarios-disponiveis`, { params: { servicoId, data } });
+  }
+
   criar(request: AgendamentoRequest): Observable<AgendamentoResponse> {
     return this.http.post<AgendamentoResponse>(this.apiUrl, request);
+  }
+
+  iniciar(id: number): Observable<AgendamentoResponse> {
+    return this.http.patch<AgendamentoResponse>(`${this.apiUrl}/${id}/iniciar`, {});
   }
 
   concluir(id: number): Observable<AgendamentoResponse> {

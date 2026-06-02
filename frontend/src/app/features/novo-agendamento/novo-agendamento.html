@@ -21,32 +21,49 @@
     @if (authService.isManicure()) {
     <div class="input-group">
       <label for="clienteId">Cliente *</label>
+
       <p-select id="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" class="prime-input-override" />
     </div>
     }
 
-    <div class="row-group">
-      <div class="input-group">
-        <label for="data">Data *</label>
-        <p-datepicker InputId="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA"> </p-datepicker>
-      </div>
+    <div class="input-group">
+      <label for="servicoId">Serviço *</label>
 
-      <div class="input-group">
-        <label for="hora">Hora *</label>
-        <p-datepicker id="hora" formControlName="hora" [timeOnly]="true" placeholder="00:00" class="prime-input-override"> </p-datepicker>
-      </div>
+      <p-select id="servicoId" formControlName="servicoId" [options]="servicos()" optionLabel="nome" optionValue="id" placeholder="Qual serviço será feito?" class="prime-input-override" />
     </div>
 
     <div class="input-group">
-      <label for="servico">Serviço *</label>
-      <p-select id="servicoId" formControlName="servicoId" [options]="servicos()" optionLabel="nome" optionValue="id" placeholder="Qual serviço será feito?" class="prime-input-override"> </p-select>
+      <label for="data">Data *</label>
+
+      <p-datepicker inputId="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA" [minDate]="dataMinima" class="prime-input-override" />
+    </div>
+
+    <div class="input-group">
+      <label for="hora">Hora *</label>
+
+      <p-select
+        id="hora"
+        formControlName="hora"
+        [options]="horariosDisponiveis()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecione o horário"
+        class="prime-input-override"
+        [disabled]="!temServicoEDataSelecionados() || carregandoHorarios() || horariosDisponiveis().length === 0"
+      />
+
+      @if (temServicoEDataSelecionados() && horariosDisponiveis().length === 0 && !carregandoHorarios()) {
+      <small class="field-hint">Nenhum horário disponível para esta data e serviço.</small>
+      }
     </div>
 
     <div class="actions">
-      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid || salvando()">
         <i class="pi pi-save"></i>
-        Confirmar agendamento
+
+        @if (salvando()) { Salvando... } @else { Confirmar agendamento }
       </button>
+
       <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
     </div>
   </form>

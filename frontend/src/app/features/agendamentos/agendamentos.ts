@@ -7,8 +7,10 @@ import { Agendamento } from '../../core/models/agendamento.model';
 import { mapAgendamentoResponseToModel } from '../../core/mappers/agendamento.mapper';
 import { DialogService } from '../../core/service/dialog.service';
 import { AuthService } from '../../core/service/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
 
-type FiltroAgendamento = 'todos' | 'hoje' | 'semana';
+type FiltroAgendamento = 'todos' | 'hoje' | 'semana' | 'historico';
 
 @Component({
   selector: 'app-agendamentos',
@@ -36,12 +38,14 @@ export class Agendamentos {
     { label: 'Todos', value: 'todos' },
     { label: 'Hoje', value: 'hoje' },
     { label: 'Semana', value: 'semana' },
+    { label: 'Histórico', value: 'historico' },
   ];
 
   public readonly agendamentosFiltrados = computed(() => {
-    return this.agendamentos().sort((a, b) => {
+    return [...this.agendamentos()].sort((a, b) => {
       const dataHoraA = new Date(`${a.data}T${a.hora}`).getTime();
       const dataHoraB = new Date(`${b.data}T${b.hora}`).getTime();
+
       return dataHoraA - dataHoraB;
     });
   });
@@ -49,12 +53,34 @@ export class Agendamentos {
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const filtro = params.get('filtro');
-      if (filtro === 'hoje' || filtro === 'semana' || filtro === 'todos') {
+      if (filtro === 'hoje' || filtro === 'semana' || filtro === 'todos' || filtro === 'historico') {
         this.filtroSelecionado.set(filtro);
       } else {
         this.filtroSelecionado.set('todos');
       }
       this.carregarAgendamentos();
+    });
+  }
+
+  iniciarAgendamento(id: number): void {
+    this.dialogService.confirmDialog({
+      header: 'Iniciar atendimento',
+      message: 'Deseja iniciar este atendimento?',
+      icon: 'pi pi-play-circle',
+      acceptLabel: 'Sim, iniciar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.agendamentoService.iniciar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: (agendamentoAtualizado) => {
+            const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
+            this.agendamentos.update((agendamentos) => agendamentos.map((item) => (item.id === id ? agendamento : item)));
+            this.dialogService.success('Atendimento iniciado com sucesso.', 'Atendimento iniciado');
+          },
+          error: (error: HttpErrorResponse) => {
+            this.dialogService.error(this.extrairMensagemErro(error));
+          },
+        });
+      },
     });
   }
 
@@ -110,7 +136,7 @@ export class Agendamentos {
     }
     this.dialogService.confirmDialog({
       header: 'Remover agendamento',
-      message: 'Deseja remover este agendamento? Ele será marcado como cancelado.',
+      message: 'Deseja remover este agendamento? Ele será enviado para o histórico.',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sim, remover',
       rejectLabel: 'Cancelar',
@@ -120,16 +146,9 @@ export class Agendamentos {
         this.agendamentoService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => {
             this.agendamentos.update((agendamentos) =>
-              agendamentos.map((agendamento) =>
-                agendamento.id === id
-                  ? {
-                    ...agendamento,
-                    status: 'CANCELADO',
-                  }
-                  : agendamento
-              )
+              agendamentos.filter((agendamento) => agendamento.id !== id)
             );
-            this.dialogService.success('O agendamento foi cancelado e mantido no histórico.', 'Agendamento removido');
+            this.dialogService.success('Agendamento removido com sucesso.', 'Agendamento removido');
           },
           error: () => {
             this.dialogService.error('Não foi possível remover o agendamento.');
@@ -139,12 +158,20 @@ export class Agendamentos {
     });
   }
 
+  podeIniciar(status: string): boolean {
+    return this.authService.isManicure() && status === 'AGENDADO' && this.filtroSelecionado() !== 'historico';
+  }
+
   podeConcluir(status: string): boolean {
-    return this.authService.isManicure() && status === 'AGENDADO';
+    return this.authService.isManicure() && status === 'EM_ATENDIMENTO' && this.filtroSelecionado() !== 'historico';
   }
 
   podeCancelar(status: string): boolean {
-    return status === 'AGENDADO';
+    return status === 'AGENDADO' && this.filtroSelecionado() !== 'historico';
+  }
+
+  podeRemover(): boolean {
+    return this.authService.isManicure() && this.filtroSelecionado() !== 'historico';
   }
 
   abrirMenu(): void {
@@ -182,8 +209,10 @@ export class Agendamentos {
   formatarStatus(status: string): string {
     const statusMap: Record<string, string> = {
       AGENDADO: 'Agendado',
+      EM_ATENDIMENTO: 'Em atendimento',
       CONCLUIDO: 'Concluído',
       CANCELADO: 'Cancelado',
+      EXCLUIDO: 'Excluído',
     };
     return statusMap[status] ?? status;
   }
@@ -195,10 +224,31 @@ export class Agendamentos {
     });
   }
 
+  private extrairMensagemErro(error: HttpErrorResponse): string {
+    const apiError = error.error as ApiErrorResponse | undefined;
+
+    if (apiError?.details?.length) {
+      return apiError.details.join('\n');
+    }
+
+    if (apiError?.message) {
+      return apiError.message;
+    }
+    return 'Não foi possível realizar esta ação.';
+  }
+
   private carregarAgendamentos(): void {
     this.carregando.set(true);
     const filtro = this.filtroSelecionado();
-    const request$ = filtro === 'hoje' ? this.agendamentoService.listarHoje() : filtro === 'semana' ? this.agendamentoService.listarSemana() : this.agendamentoService.listar();
+    const request$ =
+      filtro === 'hoje'
+        ? this.agendamentoService.listarHoje()
+        : filtro === 'semana'
+          ? this.agendamentoService.listarSemana()
+          : filtro === 'historico'
+            ? this.agendamentoService.listarHistorico()
+            : this.agendamentoService.listar();
+
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (agendamentos) => {
         this.agendamentos.set(agendamentos.map(mapAgendamentoResponseToModel));
@@ -206,7 +256,7 @@ export class Agendamentos {
       },
       error: () => {
         this.carregando.set(false);
-        alert('Não foi possível carregar os agendamentos.');
+        this.dialogService.error('Não foi possível carregar os agendamentos.');
       },
     });
   }
