@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
+
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, UsuarioLogado } from '../models/dtos/auth.dto';
 
@@ -25,6 +26,7 @@ export class AuthService {
     public readonly role = computed(() => this.usuarioLogadoSignal()?.role ?? null);
     public readonly isManicure = computed(() => this.role() === 'MANICURE');
     public readonly isCliente = computed(() => this.role() === 'CLIENTE');
+    public readonly clienteId = computed(() => this.usuarioLogadoSignal()?.clienteId ?? null);
     public readonly autenticado = computed(() => !!this.token && !!this.usuarioLogadoSignal());
 
     get token(): string | null {
@@ -52,7 +54,9 @@ export class AuthService {
             nome: response.nome,
             email: response.email,
             role: response.role,
+            clienteId: response.clienteId,
         };
+
         localStorage.setItem(TOKEN_KEY, response.token);
         localStorage.setItem(USER_KEY, JSON.stringify(usuario));
         this.usuarioLogadoSignal.set(usuario);
@@ -60,9 +64,11 @@ export class AuthService {
 
     private obterUsuarioDoStorage(): UsuarioLogado | null {
         const usuarioJson = localStorage.getItem(USER_KEY);
+
         if (!usuarioJson) {
             return null;
         }
+
         try {
             return JSON.parse(usuarioJson) as UsuarioLogado;
         } catch {

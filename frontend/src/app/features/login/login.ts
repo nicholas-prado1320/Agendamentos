@@ -9,6 +9,7 @@ import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../core/service/auth.service';
 import { DialogService } from '../../core/service/dialog.service';
 import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
+import { HorarioAtendimentoService } from '../../core/service/horario-atendimento.service';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +29,7 @@ export class Login {
   private readonly destroyRef = inject(DestroyRef);
   private readonly authService = inject(AuthService);
   private readonly dialogService = inject(DialogService);
+  private readonly horarioAtendimentoService = inject(HorarioAtendimentoService);
 
   public readonly carregando = signal(false);
 
@@ -43,14 +45,35 @@ export class Login {
     }
     this.carregando.set(true);
     this.authService.login(this.form.getRawValue()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.carregando.set(false);
+      next: (response) => {
         this.dialogService.success('Login realizado com sucesso.');
+        if (response.role === 'MANICURE') {
+          this.verificarHorarioManicure();
+          return;
+        }
+        this.carregando.set(false);
         this.router.navigate(['/home']);
       },
       error: (error: HttpErrorResponse) => {
         this.carregando.set(false);
         this.dialogService.error(this.extrairMensagemErro(error), 'Erro ao entrar');
+      },
+    });
+  }
+
+  private verificarHorarioManicure(): void {
+    this.horarioAtendimentoService.verificarConfiguracao().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => {
+        this.carregando.set(false);
+        if (response.configurado) {
+          this.router.navigate(['/home']);
+          return;
+        }
+        this.router.navigate(['/horarios']);
+      },
+      error: () => {
+        this.carregando.set(false);
+        this.router.navigate(['/horarios']);
       },
     });
   }

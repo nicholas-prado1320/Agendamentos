@@ -10,6 +10,7 @@ export interface AuthResponse {
   nome: string;
   email: string;
   role: UsuarioRole;
+  clienteId?: number | null;
   token: string;
 }
 
@@ -18,4 +19,5 @@ export interface UsuarioLogado {
   nome: string;
   email: string;
   role: UsuarioRole;
+  clienteId?: number | null;
 }
