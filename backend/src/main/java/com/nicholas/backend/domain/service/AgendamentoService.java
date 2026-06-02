@@ -7,14 +7,15 @@ import com.nicholas.backend.domain.entity.StatusAgendamento;
 import com.nicholas.backend.domain.repository.AgendamentoRepository;
 import com.nicholas.backend.dto.request.AgendamentoRequest;
 import com.nicholas.backend.dto.response.AgendamentoResponse;
+import com.nicholas.backend.dto.response.HorarioDisponivelResponse;
 import com.nicholas.backend.dto.response.ClienteResumoResponse;
 import com.nicholas.backend.dto.response.ServicoResumoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,22 +26,37 @@ public class AgendamentoService {
     private final UsuarioAutenticadoService usuarioAutenticadoService;
     private final ClienteService clienteService;
     private final ServicoService servicoService;
+    private final HorarioAtendimentoService horarioAtendimentoService;
+
+    private static final List<StatusAgendamento> STATUS_ATIVOS = List.of(
+            StatusAgendamento.AGENDADO,
+            StatusAgendamento.EM_ATENDIMENTO
+    );
+
+    private static final List<StatusAgendamento> STATUS_HISTORICO = List.of(
+            StatusAgendamento.CONCLUIDO,
+            StatusAgendamento.CANCELADO,
+            StatusAgendamento.EXCLUIDO
+    );
+
 
     public List<AgendamentoResponse> listar() {
         if (usuarioAutenticadoService.isCliente()) {
             Long clienteId = usuarioAutenticadoService.getClienteId();
 
             if (clienteId == null) {
-                throw new RuntimeException("Usuário cliente não possui cadastro de cliente vinculado.");
+                throw new RuntimeException("Cliente não possui cadastro vinculado.");
             }
 
-            return agendamentoRepository.findByClienteIdOrderByDataAscHoraAsc(clienteId)
+            return agendamentoRepository
+                    .findByClienteIdAndStatusInOrderByDataAscHoraAsc(clienteId, STATUS_ATIVOS)
                     .stream()
                     .map(this::toResponse)
                     .toList();
         }
 
-        return agendamentoRepository.findAll()
+        return agendamentoRepository
+                .findByStatusInOrderByDataAscHoraAsc(STATUS_ATIVOS)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -56,13 +72,15 @@ public class AgendamentoService {
                 throw new RuntimeException("Usuário cliente não possui cadastro de cliente vinculado.");
             }
 
-            return agendamentoRepository.findByClienteIdAndDataOrderByHoraAsc(clienteId, hoje)
+            return agendamentoRepository
+                    .findByClienteIdAndDataAndStatusInOrderByHoraAsc(clienteId, hoje, STATUS_ATIVOS)
                     .stream()
                     .map(this::toResponse)
                     .toList();
         }
 
-        return agendamentoRepository.findByDataOrderByHoraAsc(hoje)
+        return agendamentoRepository
+                .findByDataAndStatusInOrderByHoraAsc(hoje, STATUS_ATIVOS)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -82,10 +100,11 @@ public class AgendamentoService {
             }
 
             return agendamentoRepository
-                    .findByClienteIdAndDataBetweenOrderByDataAscHoraAsc(
+                    .findByClienteIdAndDataBetweenAndStatusInOrderByDataAscHoraAsc(
                             clienteId,
                             inicioSemana,
-                            fimSemana
+                            fimSemana,
+                            STATUS_ATIVOS
                     )
                     .stream()
                     .map(this::toResponse)
@@ -93,7 +112,33 @@ public class AgendamentoService {
         }
 
         return agendamentoRepository
-                .findByDataBetweenOrderByDataAscHoraAsc(inicioSemana, fimSemana)
+                .findByDataBetweenAndStatusInOrderByDataAscHoraAsc(
+                        inicioSemana,
+                        fimSemana,
+                        STATUS_ATIVOS
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<AgendamentoResponse> listarHistorico() {
+        if (usuarioAutenticadoService.isCliente()) {
+            Long clienteId = usuarioAutenticadoService.getClienteId();
+
+            if (clienteId == null) {
+                throw new RuntimeException("Usuário cliente não possui cadastro de cliente vinculado.");
+            }
+
+            return agendamentoRepository
+                    .findByClienteIdAndStatusInOrderByDataAscHoraAsc(clienteId, STATUS_HISTORICO)
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
+
+        return agendamentoRepository
+                .findByStatusInOrderByDataAscHoraAsc(STATUS_HISTORICO)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -103,14 +148,26 @@ public class AgendamentoService {
         Cliente cliente;
 
         if (usuarioAutenticadoService.isCliente()) {
-            Long clienteId = usuarioAutenticadoService.getClienteId();
+            Long clienteLogadoId = usuarioAutenticadoService.getClienteId();
 
-            if (clienteId == null) {
+            if (clienteLogadoId == null) {
                 throw new RuntimeException("Usuário cliente não possui cadastro de cliente vinculado.");
             }
 
-            cliente = clienteService.buscarEntidadePorId(clienteId);
+            if (request.clienteId() == null) {
+                throw new RuntimeException("A cliente é obrigatória.");
+            }
+
+            if (!request.clienteId().equals(clienteLogadoId)) {
+                throw new RuntimeException("Você não tem permissão para criar agendamento para outra cliente.");
+            }
+
+            cliente = clienteService.buscarEntidadePorId(clienteLogadoId);
         } else {
+            if (request.clienteId() == null) {
+                throw new RuntimeException("A cliente é obrigatória.");
+            }
+
             cliente = clienteService.buscarEntidadePorId(request.clienteId());
         }
 
@@ -138,12 +195,32 @@ public class AgendamentoService {
         return toResponse(agendamentoSalvo);
     }
 
+    public AgendamentoResponse iniciar(Long id) {
+        if (usuarioAutenticadoService.isCliente()) {
+            throw new RuntimeException("Cliente não pode iniciar atendimento.");
+        }
+
+        Agendamento agendamento = buscarEntidadePorId(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO) {
+            throw new RuntimeException("Somente agendamentos agendados podem ser iniciados.");
+        }
+
+        agendamento.setStatus(StatusAgendamento.EM_ATENDIMENTO);
+
+        return toResponse(agendamentoRepository.save(agendamento));
+    }
+
     public AgendamentoResponse concluir(Long id) {
         if (usuarioAutenticadoService.isCliente()) {
             throw new RuntimeException("Cliente não pode concluir agendamento.");
         }
 
         Agendamento agendamento = buscarEntidadePorId(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.EM_ATENDIMENTO) {
+            throw new RuntimeException("O atendimento precisa ser iniciado antes de ser concluído.");
+        }
 
         agendamento.setStatus(StatusAgendamento.CONCLUIDO);
 
@@ -155,17 +232,27 @@ public class AgendamentoService {
 
         validarPermissaoSobreAgendamento(agendamento);
 
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO) {
+            throw new RuntimeException("Somente agendamentos agendados podem ser cancelados.");
+        }
+
         agendamento.setStatus(StatusAgendamento.CANCELADO);
 
         return toResponse(agendamentoRepository.save(agendamento));
     }
 
     public void remover(Long id) {
+        if (usuarioAutenticadoService.isCliente()) {
+            throw new RuntimeException("Cliente não pode excluir agendamento.");
+        }
+
         Agendamento agendamento = buscarEntidadePorId(id);
 
-        validarPermissaoSobreAgendamento(agendamento);
+        if (agendamento.getStatus() == StatusAgendamento.EXCLUIDO) {
+            return;
+        }
 
-        agendamento.setStatus(StatusAgendamento.CANCELADO);
+        agendamento.setStatus(StatusAgendamento.EXCLUIDO);
 
         agendamentoRepository.save(agendamento);
     }
@@ -186,18 +273,109 @@ public class AgendamentoService {
         }
     }
 
-    private void validarConflitoDeHorario(AgendamentoRequest request, Servico servicoNovo) {
-        LocalTime inicioNovo = request.hora();
-        LocalTime fimNovo = inicioNovo.plusMinutes(converterDuracaoParaMinutos(servicoNovo.getDuracao()));
+    public List<HorarioDisponivelResponse> listarHorariosDisponiveis(Long servicoId, LocalDate data) {
+        Servico servico = servicoService.buscarEntidadePorId(servicoId);
 
-        List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatus(
+        if (!Boolean.TRUE.equals(servico.getAtivo())) {
+            throw new RuntimeException("O serviço selecionado está inativo.");
+        }
+
+        var horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(data.getDayOfWeek());
+
+        int duracaoNovoServico = converterDuracaoParaMinutos(servico.getDuracao());
+
+        LocalTime inicioExpediente = horarioAtendimento.getHoraInicio();
+        LocalTime fimExpediente = horarioAtendimento.getHoraFim();
+
+        List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatusInOrderByHoraAsc(
+                data,
+                STATUS_ATIVOS
+        );
+
+        List<HorarioDisponivelResponse> horariosDisponiveis = new ArrayList<>();
+
+        LocalTime inicioLivre = inicioExpediente;
+
+        for (Agendamento agendamentoExistente : agendamentosDoDia) {
+            LocalTime inicioAgendado = agendamentoExistente.getHora();
+
+            LocalTime fimAgendado = inicioAgendado.plusMinutes(
+                    converterDuracaoParaMinutos(agendamentoExistente.getServico().getDuracao())
+            );
+
+            if (!fimAgendado.isAfter(inicioLivre)) {
+                continue;
+            }
+
+            if (inicioAgendado.isAfter(inicioLivre)) {
+                adicionarHorariosNoIntervalo(
+                        horariosDisponiveis,
+                        inicioLivre,
+                        inicioAgendado,
+                        duracaoNovoServico
+                );
+            }
+
+            if (fimAgendado.isAfter(inicioLivre)) {
+                inicioLivre = fimAgendado;
+            }
+
+            if (!inicioLivre.isBefore(fimExpediente)) {
+                break;
+            }
+        }
+
+        adicionarHorariosNoIntervalo(
+                horariosDisponiveis,
+                inicioLivre,
+                fimExpediente,
+                duracaoNovoServico
+        );
+
+        return horariosDisponiveis;
+    }
+
+    private void adicionarHorariosNoIntervalo(
+            List<HorarioDisponivelResponse> horariosDisponiveis,
+            LocalTime inicioLivre,
+            LocalTime fimLivre,
+            int duracaoServico
+    ) {
+        LocalTime horarioAtual = inicioLivre;
+
+        while (!horarioAtual.plusMinutes(duracaoServico).isAfter(fimLivre)) {
+            horariosDisponiveis.add(
+                    new HorarioDisponivelResponse(horarioAtual.toString())
+            );
+
+            horarioAtual = horarioAtual.plusMinutes(duracaoServico);
+        }
+    }
+
+    private void validarConflitoDeHorario(AgendamentoRequest request, Servico servicoNovo) {
+        var horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(
+                request.data().getDayOfWeek()
+        );
+
+        LocalTime inicioNovo = request.hora();
+
+        LocalTime fimNovo = inicioNovo.plusMinutes(
+                converterDuracaoParaMinutos(servicoNovo.getDuracao())
+        );
+
+        if (inicioNovo.isBefore(horarioAtendimento.getHoraInicio()) || fimNovo.isAfter(horarioAtendimento.getHoraFim())) {
+            throw new RuntimeException("O horário selecionado está fora do expediente de atendimento.");
+        }
+
+        List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatusInOrderByHoraAsc(
                 request.data(),
-                StatusAgendamento.AGENDADO
+                STATUS_ATIVOS
         );
 
         boolean existeConflito = agendamentosDoDia.stream()
                 .anyMatch((agendamentoExistente) -> {
                     LocalTime inicioExistente = agendamentoExistente.getHora();
+
                     LocalTime fimExistente = inicioExistente.plusMinutes(
                             converterDuracaoParaMinutos(agendamentoExistente.getServico().getDuracao())
                     );
