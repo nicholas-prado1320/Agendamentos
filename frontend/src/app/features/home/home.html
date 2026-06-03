@@ -1,37 +1,34 @@
 <app-drawer [(visible)]="menuAberto" />
-<main class="home-page">
-  <header class="toolbar">
-    <button type="button" class="icon-button menu-button" aria-label="Abrir menu" (click)="abrirMenu()">
-      <i class="pi pi-bars"></i>
-    </button>
 
-    <button type="button" class="icon-button notification-button" aria-label="Notificações">
-      <i class="pi pi-bell"></i>
-      <span class="notification-badge">3</span>
-    </button>
-  </header>
+<main class="home-page">
+  <section class="hero-banner">
+    <img src="/assets/imagens/banner.png" alt="Peony Beauty" class="hero-banner-image" />
+
+    <header class="toolbar">
+      <button type="button" class="icon-button menu-button" aria-label="Abrir menu" (click)="abrirMenu()">
+        <i class="pi pi-bars"></i>
+      </button>
+
+      <!-- Futuramente vou ativar as notificações aqui -->
+      <!--
+      <button type="button" class="icon-button notification-button" aria-label="Notificações" disabled>
+        <i class="pi pi-bell"></i>
+      </button>
+      -->
+    </header>
+  </section>
 
   <section class="welcome-section">
     <p class="eyebrow">Agenda do salão</p>
-    <h1>Bom dia, Nails! <span>🌸</span></h1>
+
+    <h1>{{ saudacao }}, {{ nomeUsuario }}! <span>🌸</span></h1>
+
     <p>{{ dataAtual }}</p>
-  </section>
-
-  <section class="shortcut-grid" aria-label="Ações principais">
-    @for (atalho of atalhos; track atalho.id) {
-    <button type="button" class="shortcut-card" (click)="selecionarAtalho(atalho.id)">
-      <span class="shortcut-icon">
-        <i [class]="atalho.icone"></i>
-      </span>
-
-      <strong>{{ atalho.titulo }}</strong>
-    </button>
-    }
   </section>
 
   <section class="appointments-section">
     <div class="section-header">
-      <h2>Hoje</h2>
+      <h2>Agenda de hoje</h2>
 
       <button type="button" class="see-all-button" (click)="verTodosAgendamentos()">
         Ver todos
@@ -42,26 +39,27 @@
     <div class="appointments-list">
       @for (agendamento of agendamentosHoje(); track agendamento.id) {
       <article class="appointment-card">
-        <div class="appointment-time">{{ agendamento.hora }}</div>
+        <div class="appointment-header">
+          <div class="appointment-time">
+            <i class="pi pi-clock"></i>
+            <strong>{{ agendamento.hora }}</strong>
+          </div>
 
-        <div class="appointment-content">
+          <span class="status-pill">{{ formatarStatus(agendamento.status) }}</span>
+        </div>
+
+        <div class="appointment-body">
           <div class="client-avatar">{{ agendamento.cliente.iniciais }}</div>
 
           <div class="appointment-info">
             <strong>{{ agendamento.cliente.nomeCompleto }}</strong>
 
-            <span>
+            <span class="service-name">
               <i class="pi pi-sparkles"></i>
               {{ agendamento.servico.nome }}
             </span>
-          </div>
 
-          <div class="appointment-actions">
-            <span class="status-pill">{{ formatarStatus(agendamento.status) }}</span>
-
-            <button type="button" class="details-button" aria-label="Ver detalhes">
-              <i class="pi pi-chevron-right"></i>
-            </button>
+            <span class="service-price">{{ formatarValor(agendamento.servico.preco) }}</span>
           </div>
         </div>
       </article>
@@ -69,25 +67,10 @@
       <div class="empty-state-home">
         <i class="pi pi-calendar"></i>
         <p>Nenhum agendamento para hoje.</p>
-        <span>Toque em novo agendamento para marcar um horário.</span>
+        <span>Toque no botão abaixo para marcar um novo horário.</span>
       </div>
       }
     </div>
-  </section>
-
-  <section class="daily-message">
-    <div class="daily-icon">
-      <i class="pi pi-heart-fill"></i>
-    </div>
-
-    <div>
-      <strong>Seu dia está incrível</strong>
-      <p>Boas energias atraem clientes incríveis! 💗</p>
-    </div>
-
-    <button type="button" class="more-button" aria-label="Mais opções">
-      <i class="pi pi-ellipsis-v"></i>
-    </button>
   </section>
 
   <button type="button" class="floating-button" aria-label="Novo agendamento" (click)="novoAgendamento()">

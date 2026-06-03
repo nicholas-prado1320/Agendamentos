@@ -5,14 +5,7 @@ import { AgendamentoService } from '../../core/service/agendamento.service';
 import { AppDrawerComponent } from '../../shared/app-drawer/app-drawer';
 import { Agendamento } from '../../core/models/agendamento.model';
 import { mapAgendamentoResponseToModel } from '../../core/mappers/agendamento.mapper';
-
-interface AtalhoHome {
-  id: 'novo-agendamento' | 'hoje' | 'semana';
-  titulo: string;
-  icone: string;
-}
-
-type RotaMenu = 'home' | 'agendamentos' | 'clientes' | 'servicos';
+import { AuthService } from '../../core/service/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -25,31 +18,16 @@ export class HomeComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly agendamentoService = inject(AgendamentoService);
+  private readonly authService = inject(AuthService);
 
   public readonly agendamentosHoje = signal<Agendamento[]>([]);
   public readonly carregando = signal(false);
 
-  menuAberto = false;
+  public menuAberto = false;
 
   public readonly dataAtual = this.formatarDataAtual();
-
-  public readonly atalhos: AtalhoHome[] = [
-    {
-      id: 'novo-agendamento',
-      titulo: 'Novo agendamento',
-      icone: 'pi pi-calendar-plus',
-    },
-    {
-      id: 'hoje',
-      titulo: 'Hoje',
-      icone: 'pi pi-clock',
-    },
-    {
-      id: 'semana',
-      titulo: 'Semana',
-      icone: 'pi pi-calendar',
-    },
-  ];
+  public readonly saudacao = this.obterSaudacao();
+  public readonly nomeUsuario = this.obterNomeUsuario();
 
   constructor() {
     this.carregarAgendamentosHoje();
@@ -57,43 +35,6 @@ export class HomeComponent {
 
   abrirMenu(): void {
     this.menuAberto = true;
-  }
-
-  fecharMenu(): void {
-    this.menuAberto = false;
-  }
-
-  navegarPara(rota: RotaMenu): void {
-    this.fecharMenu();
-    const rotas: Record<RotaMenu, string> = {
-      home: '/home',
-      agendamentos: '/agendamentos',
-      clientes: '/clientes',
-      servicos: '/servicos',
-    };
-    this.router.navigate([rotas[rota]]);
-  }
-
-  selecionarAtalho(atalho: AtalhoHome['id']): void {
-    if (atalho === 'novo-agendamento') {
-      this.novoAgendamento();
-      return;
-    }
-    if (atalho === 'hoje') {
-      this.router.navigate(['/agendamentos'], {
-        queryParams: {
-          filtro: 'hoje',
-        },
-      });
-      return;
-    }
-    if (atalho === 'semana') {
-      this.router.navigate(['/agendamentos'], {
-        queryParams: {
-          filtro: 'semana',
-        },
-      });
-    }
   }
 
   novoAgendamento(): void {
@@ -107,25 +48,66 @@ export class HomeComponent {
   formatarStatus(status: string): string {
     const statusMap: Record<string, string> = {
       AGENDADO: 'Agendado',
+      EM_ATENDIMENTO: 'Em atendimento',
       CONCLUIDO: 'Concluído',
       CANCELADO: 'Cancelado',
+      EXCLUIDO: 'Excluído',
     };
+
     return statusMap[status] ?? status;
+  }
+
+  formatarValor(valor: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(valor);
   }
 
   private carregarAgendamentosHoje(): void {
     this.carregando.set(true);
-    this.agendamentoService.listarHoje().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (agendamentos) => {
-        const agendamentosMapeados = agendamentos.map(mapAgendamentoResponseToModel).sort((a, b) => a.hora.localeCompare(b.hora));
-        this.agendamentosHoje.set(agendamentosMapeados);
-        this.carregando.set(false);
-      },
-      error: () => {
-        this.carregando.set(false);
-        alert('Não foi possível carregar os agendamentos de hoje.');
-      },
-    });
+
+    this.agendamentoService
+      .listarHoje()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (agendamentos) => {
+          const agendamentosMapeados = agendamentos
+            .map(mapAgendamentoResponseToModel)
+            .sort((a, b) => a.hora.localeCompare(b.hora));
+
+          this.agendamentosHoje.set(agendamentosMapeados);
+          this.carregando.set(false);
+        },
+        error: () => {
+          this.carregando.set(false);
+          alert('Não foi possível carregar os agendamentos de hoje.');
+        },
+      });
+  }
+
+  private obterSaudacao(): string {
+    const horaAtual = new Date().getHours();
+
+    if (horaAtual >= 5 && horaAtual <= 11) {
+      return 'Bom dia';
+    }
+
+    if (horaAtual >= 12 && horaAtual <= 17) {
+      return 'Boa tarde';
+    }
+
+    return 'Boa noite';
+  }
+
+  private obterNomeUsuario(): string {
+    const usuario = this.authService.usuarioLogado();
+
+    if (!usuario?.nome) {
+      return 'Nails';
+    }
+
+    return usuario.nome.split(' ')[0];
   }
 
   private formatarDataAtual(): string {
