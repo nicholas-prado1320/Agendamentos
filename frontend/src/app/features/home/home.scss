@@ -19,7 +19,7 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
 .hero-banner {
   position: relative;
-  height: clamp(6.5rem, 16vw, 11rem);
+  height: clamp(5.5rem, 13vw, 10rem);
   margin: 0 calc($page-padding * -1) 1.5rem;
   overflow: hidden;
   background: #fff8f5;
@@ -31,7 +31,7 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center;
 }
 
 .toolbar {
@@ -68,11 +68,6 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
   &:active {
     transform: scale(0.96);
-  }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
   }
 }
 
