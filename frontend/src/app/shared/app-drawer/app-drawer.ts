@@ -1,13 +1,22 @@
 import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
+import { DividerModule } from 'primeng/divider';
 import { AuthService } from '../../core/service/auth.service';
 
-type DrawerRoute = 'home' | 'novo-agendamento' | 'agendamentos' | 'clientes' | 'servicos' | 'novo-cliente' | 'novo-servico' | 'horarios';
+type DrawerRoute =
+  | 'home'
+  | 'novo-agendamento'
+  | 'agendamentos'
+  | 'clientes'
+  | 'servicos'
+  | 'novo-cliente'
+  | 'novo-servico'
+  | 'horarios';
 
 @Component({
   selector: 'app-drawer',
-  imports: [DrawerModule],
+  imports: [DrawerModule, DividerModule],
   templateUrl: './app-drawer.html',
   styleUrl: './app-drawer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +43,7 @@ export class AppDrawerComponent {
 
   alterarVisibilidade(aberto: boolean): void {
     this.visible.set(aberto);
+
     if (!aberto) {
       this.finalizarNavegacao();
     }
@@ -42,12 +52,15 @@ export class AppDrawerComponent {
   navegarPara(rota: DrawerRoute): void {
     const destino = this.rotas[rota];
     const urlAtual = this.router.url.split('?')[0];
+
     if (urlAtual === destino) {
       this.visible.set(false);
       return;
     }
+
     this.rotaPendente = destino;
     this.visible.set(false);
+
     window.setTimeout(() => {
       this.finalizarNavegacao();
     }, 250);
@@ -62,8 +75,10 @@ export class AppDrawerComponent {
     if (!this.rotaPendente) {
       return;
     }
+
     const destino = this.rotaPendente;
     this.rotaPendente = null;
+
     this.limparMascaraPreso();
     this.router.navigate([destino]);
   }
@@ -75,7 +90,9 @@ export class AppDrawerComponent {
 
   private limparMascaraPreso(): void {
     document.body.classList.remove('p-overflow-hidden');
+
     const mascaras = document.querySelectorAll('.p-drawer-mask, .p-overlay-mask');
+
     mascaras.forEach((mascara) => {
       mascara.remove();
     });

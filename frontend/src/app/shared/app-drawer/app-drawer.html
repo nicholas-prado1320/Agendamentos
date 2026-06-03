@@ -1,53 +1,61 @@
-<p-drawer [visible]="visible()" (visibleChange)="alterarVisibilidade($event)" position="left" styleClass="app-drawer-panel" [modal]="true" [dismissible]="true" [blockScroll]="true">
+<p-drawer
+  [visible]="visible()"
+  (visibleChange)="alterarVisibilidade($event)"
+  position="left"
+  styleClass="app-drawer-panel"
+  [modal]="true"
+  [dismissible]="true"
+  [blockScroll]="true"
+  [showCloseIcon]="false"
+>
   <div class="drawer-content">
-    <div class="drawer-brand">
-      <div class="brand-icon">P</div>
+    <div>
+      <div class="drawer-brand">
+        <img src="/assets/imagens/LogoPeonyBorda.png" alt="Peony Beauty" class="brand-logo" />
 
-      <div>
-        <strong>Peony Beauty</strong>
-        <span>Agenda de atendimentos</span>
+        <div>
+          <strong>Peony Beauty</strong>
+          <span>Agenda de atendimentos</span>
+        </div>
       </div>
+
+      <nav class="drawer-nav">
+        <button type="button" class="drawer-item" [class.active]="rotaAtiva('home')" (click)="navegarPara('home')">
+          <i class="pi pi-home"></i>
+          <span>Início</span>
+        </button>
+
+        <button type="button" class="drawer-item" [class.active]="rotaAtiva('agendamentos')" (click)="navegarPara('agendamentos')">
+          <i class="pi pi-calendar"></i>
+          <span>Agendamentos</span>
+        </button>
+
+        <button type="button" class="drawer-item" [class.active]="rotaAtiva('servicos')" (click)="navegarPara('servicos')">
+          <i class="pi pi-sparkles"></i>
+          <span>Serviços</span>
+        </button>
+
+        @if (authService.isManicure()) {
+        <button type="button" class="drawer-item" [class.active]="rotaAtiva('clientes')" (click)="navegarPara('clientes')">
+          <i class="pi pi-users"></i>
+          <span>Clientes</span>
+        </button>
+        } @if (authService.isManicure()) {
+        <button type="button" class="drawer-item" [class.active]="rotaAtiva('horarios')" (click)="navegarPara('horarios')">
+          <i class="pi pi-clock"></i>
+          <span>Horários</span>
+        </button>
+        }
+      </nav>
     </div>
 
-    <nav class="drawer-nav">
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('home')" (click)="navegarPara('home')">
-        <i class="pi pi-home"></i>
-        <span>Início</span>
-      </button>
+    <div class="drawer-footer">
+      <p-divider />
 
-      <!-- <button type="button" class="drawer-item" [class.active]="rotaAtiva('novo-agendamento')" (click)="navegarPara('novo-agendamento')">
-        <i class="pi pi-calendar-plus"></i>
-        <span>Novo agendamento</span>
-      </button> -->
-
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('agendamentos')" (click)="navegarPara('agendamentos')">
-        <i class="pi pi-calendar"></i>
-        <span>Agendamentos</span>
-      </button>
-
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('servicos')" (click)="navegarPara('servicos')">
-        <i class="pi pi-sparkles"></i>
-        <span>Serviços</span>
-      </button>
-
-      @if (authService.isManicure()) {
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('clientes')" (click)="navegarPara('clientes')">
-        <i class="pi pi-users"></i>
-        <span>Clientes</span>
-      </button>
-      } 
-      
-      @if (authService.isManicure()) {
-      <button type="button" class="drawer-item" [class.active]="rotaAtiva('horarios')" (click)="navegarPara('horarios')">
-        <i class="pi pi-clock"></i>
-        <span>Horários</span>
-      </button>
-      } 
-
-      <button type="button" class="drawer-item" (click)="sair()">
+      <button type="button" class="drawer-item logout-item" (click)="sair()">
         <i class="pi pi-sign-out"></i>
         <span>Sair</span>
       </button>
-    </nav>
+    </div>
   </div>
 </p-drawer>

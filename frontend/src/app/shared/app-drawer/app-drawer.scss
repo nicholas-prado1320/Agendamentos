@@ -1,8 +1,12 @@
 .drawer-content {
-  height: 100%;
-  padding: 0.5rem;
+  width: 100%;
+  min-height: 100%;
+  padding: 1rem;
   color: #563426;
   background: linear-gradient(180deg, #fff9f6, #fff0ec);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .drawer-brand {
@@ -14,16 +18,13 @@
   margin-bottom: 1rem;
 }
 
-.brand-icon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 1rem;
-  color: #fff;
-  background: linear-gradient(135deg, #eeb09b, #ec7c82);
-  font-size: 1.35rem;
-  font-weight: 900;
-  display: grid;
-  place-items: center;
+.brand-logo {
+  width: 3.3rem;
+  height: 3.3rem;
+  border-radius: 1.1rem;
+  object-fit: cover;
+  background: #fff0ec;
+  box-shadow: 0 10px 24px rgba(166, 110, 82, 0.14);
 }
 
 .drawer-brand strong,
@@ -32,6 +33,7 @@
 }
 
 .drawer-brand strong {
+  color: #33211a;
   font-size: 1.05rem;
 }
 
@@ -60,28 +62,57 @@
   gap: 0.85rem;
   cursor: pointer;
   text-align: left;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  i {
+    color: #d47f65;
+  }
+
+  &.active,
+  &:hover {
+    background: rgba(255, 226, 220, 0.7);
+  }
 }
 
-.drawer-item i {
-  color: #d47f65;
+.drawer-footer {
+  padding-bottom: 0.25rem;
 }
 
-.drawer-item.active,
-.drawer-item:hover {
-  background: rgba(255, 226, 220, 0.7);
+.logout-item {
+  color: #9f433b;
+
+  i {
+    color: #d15f58;
+  }
+
+  &:hover {
+    background: rgba(255, 226, 220, 0.78);
+  }
 }
 
-:host ::ng-deep .app-drawer-panel {
-  width: min(82vw, 320px);
-  background: #fff8f5;
-}
+:host ::ng-deep {
+  .app-drawer-panel {
+    width: min(82vw, 320px);
+    background: linear-gradient(180deg, #fff9f6, #fff0ec);
+  }
 
-:host ::ng-deep .app-drawer-panel .p-drawer-header {
-  padding: 1rem 1rem 0;
-  background: #fff8f5;
-}
+  .app-drawer-panel .p-drawer-header {
+    display: none;
+  }
 
-:host ::ng-deep .app-drawer-panel .p-drawer-content {
-  padding: 1rem;
-  background: #fff8f5;
+  .app-drawer-panel .p-drawer-content {
+    height: 100%;
+    padding: 0 !important;
+    background: linear-gradient(180deg, #fff9f6, #fff0ec);
+  }
+
+  .p-divider {
+    margin: 1rem 0;
+  }
+
+  .p-divider-horizontal::before {
+    border-top-color: rgba(196, 126, 93, 0.16);
+  }
 }
