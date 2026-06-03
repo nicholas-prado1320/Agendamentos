@@ -13,13 +13,21 @@
 html,
 body,
 app-root {
+  width: 100%;
   min-height: 100%;
   margin: 0;
   font-family: 'Poppins', sans-serif;
 }
 
+app-root {
+  display: block;
+}
+
 body {
-  background: tokens.$color-bg;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: radial-gradient(circle at top, #fff4ef 0, #fffaf7 42%, #fff3ee 100%);
+  background-attachment: fixed;
   color: tokens.$color-brown;
 }
 
