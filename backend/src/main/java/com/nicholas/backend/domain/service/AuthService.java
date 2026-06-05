@@ -8,7 +8,6 @@ import com.nicholas.backend.domain.repository.ClienteRepository;
 import com.nicholas.backend.domain.repository.UsuarioRepository;
 import com.nicholas.backend.dto.request.ClienteRegisterRequest;
 import com.nicholas.backend.dto.request.LoginRequest;
-import com.nicholas.backend.dto.request.ManicureRegisterRequest;
 import com.nicholas.backend.dto.response.AuthResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -58,23 +57,6 @@ public class AuthService {
                 .senha(passwordEncoder.encode(request.senha()))
                 .role(UsuarioRole.CLIENTE)
                 .cliente(clienteSalvo)
-                .build();
-
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
-        String token = jwtService.gerarToken(usuarioSalvo);
-
-        return toResponse(usuarioSalvo, token);
-    }
-
-    public AuthResponse registrarManicure(ManicureRegisterRequest request) {
-        validarEmailDisponivel(request.email());
-
-        Usuario usuario = Usuario.builder()
-                .nome(request.nome())
-                .email(request.email().trim().toLowerCase())
-                .senha(passwordEncoder.encode(request.senha()))
-                .role(UsuarioRole.MANICURE)
                 .build();
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);

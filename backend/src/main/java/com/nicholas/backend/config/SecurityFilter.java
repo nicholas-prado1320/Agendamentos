@@ -22,6 +22,15 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final UsuarioRepository usuarioRepository;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+
+        return path.startsWith("/auth/")
+                || path.startsWith("/actuator/")
+                || path.equals("/health");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
