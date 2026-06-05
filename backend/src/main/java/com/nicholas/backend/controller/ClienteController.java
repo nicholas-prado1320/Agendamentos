@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -26,6 +27,11 @@ public class ClienteController {
         return clienteService.listarAtivos();
     }
 
+    @GetMapping("/inativos")
+    public List<ClienteResponse> listarInativos() {
+        return clienteService.listarInativos();
+    }
+
     @GetMapping("/{id}")
     public ClienteResponse buscarPorId(@PathVariable Long id) {
         return clienteService.buscarPorId(id);
@@ -38,13 +44,26 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    public ClienteResponse atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequest request) {
+    public ClienteResponse atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid ClienteRequest request
+    ) {
         return clienteService.atualizar(id, request);
+    }
+
+    @PatchMapping("/{id}/inativar")
+    public ClienteResponse inativar(@PathVariable Long id) {
+        return clienteService.inativar(id);
+    }
+
+    @PatchMapping("/{id}/ativar")
+    public ClienteResponse ativar(@PathVariable Long id) {
+        return clienteService.ativar(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void remover(@PathVariable Long id) {
-        clienteService.remover(id);
+    public void removerDefinitivo(@PathVariable Long id) {
+        clienteService.removerDefinitivo(id);
     }
 }
