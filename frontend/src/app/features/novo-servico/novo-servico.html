@@ -22,11 +22,26 @@
       <label for="descricao">Descrição</label>
     </p-floatlabel>
 
-    <p-floatlabel variant="on">
-      <p-select inputId="duracao" formControlName="duracao" [options]="opcoesDuracao()" [editable]="true" />
-
+    <div class="input-group">
       <label for="duracao">Duração *</label>
-    </p-floatlabel>
+
+      <div class="duration-picker-wrapper">
+        <i class="pi pi-clock"></i>
+
+        <p-datepicker
+          inputId="duracao"
+          formControlName="duracao"
+          [timeOnly]="true"
+          [readonlyInput]="true"
+          [showIcon]="false"
+          hourFormat="24"
+          [stepMinute]="15"
+          [defaultDate]="duracaoPadrao"
+          placeholder="Ex.: 01:30"
+          class="prime-input-override duration-picker"
+        />
+      </div>
+    </div>
 
     <p-floatlabel variant="on">
       <p-inputnumber inputId="preco" formControlName="preco" mode="currency" currency="BRL" locale="pt-BR" [min]="0" [minFractionDigits]="2" [maxFractionDigits]="2" />
