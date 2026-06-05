@@ -21,13 +21,36 @@
     </div>
   </section>
 
+  <section class="filter-tabs" aria-label="Filtro de clientes">
+    <button type="button" [class.active]="filtroCliente() === 'ATIVOS'" (click)="alterarFiltro('ATIVOS')">
+      Ativos
+      <span>{{ totalAtivos() }}</span>
+    </button>
+
+    <button type="button" [class.active]="filtroCliente() === 'INATIVOS'" (click)="alterarFiltro('INATIVOS')">
+      Inativos
+      <span>{{ totalInativos() }}</span>
+    </button>
+
+    <button type="button" [class.active]="filtroCliente() === 'TODOS'" (click)="alterarFiltro('TODOS')">
+      Todos
+      <span>{{ clientes().length }}</span>
+    </button>
+  </section>
+
   <section class="clients-list">
     @for (cliente of clientesFiltrados(); track cliente.id) {
-    <article class="client-card">
+    <article class="client-card" [class.inactive]="!cliente.ativo">
       <div class="client-avatar">{{ cliente.iniciais }}</div>
 
       <div class="client-info">
-        <strong>{{ cliente.nomeCompleto }}</strong>
+        <div class="client-name-row">
+          <strong>{{ cliente.nomeCompleto }}</strong>
+
+          @if (!cliente.ativo) {
+          <span class="inactive-pill">Inativa</span>
+          }
+        </div>
 
         @if (cliente.apelido) {
         <span>{{ cliente.apelido }}</span>
@@ -37,19 +60,36 @@
       </div>
 
       <div class="client-actions">
+        @if (cliente.ativo) {
         <button type="button" class="edit-button" aria-label="Editar cliente" (click)="editarCliente(cliente.id)">
           <i class="pi pi-pencil"></i>
         </button>
 
-        <button type="button" class="delete-button" aria-label="Remover cliente" (click)="removerCliente(cliente.id)">
+        <button type="button" class="inactive-button" aria-label="Inativar cliente" (click)="inativarCliente(cliente)">
+          <i class="pi pi-ban"></i>
+        </button>
+        } @else {
+        <button type="button" class="activate-button" aria-label="Ativar cliente" (click)="ativarCliente(cliente)">
+          <i class="pi pi-check"></i>
+        </button>
+
+        <button type="button" class="delete-button" aria-label="Excluir definitivamente" (click)="excluirDefinitivo(cliente)">
           <i class="pi pi-trash"></i>
         </button>
+        }
       </div>
     </article>
     } @empty {
     <div class="empty-state">
       <i class="pi pi-users"></i>
+
+      @if (filtroCliente() === 'ATIVOS') {
+      <p>Nenhuma cliente ativa encontrada.</p>
+      } @else if (filtroCliente() === 'INATIVOS') {
+      <p>Nenhuma cliente inativa encontrada.</p>
+      } @else {
       <p>Nenhuma cliente encontrada.</p>
+      }
     </div>
     }
   </section>

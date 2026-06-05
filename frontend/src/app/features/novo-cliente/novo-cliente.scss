@@ -1,114 +1,153 @@
-:host { 
-  display: block; 
-  min-height: 100dvh; 
-  background: #fffaf7; 
+@use '../../../styles/tokens' as *;
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  color: $color-brown;
+  font-family: $font-main;
 }
 
-.page-container { 
-  width: min(100%, 520px); 
-  margin: 0 auto; 
-  padding: 1.5rem 1.25rem; 
+$page-padding: clamp(1rem, 5vw, 18rem);
+
+.page-container {
+  width: 100%;
+  min-height: 100dvh;
+  padding: 1.5rem $page-padding 6.5rem;
+  overflow-x: hidden;
 }
 
-.toolbar { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  margin-bottom: 2rem; 
-  
-  h1 { 
-    margin: 0; 
-    color: #4d2f22; 
-    font-size: 1.25rem; 
+.form-shell {
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 3rem 1fr 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+
+  h1 {
+    margin: 0;
+    color: $color-brown-dark;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.03rem;
   }
 }
 
-.icon-button { 
-  width: 3rem; 
-  height: 3rem; 
-  border: 0; 
-  border-radius: 1.1rem; 
-  background: transparent; 
-  color: #bf7150; 
-  cursor: pointer; 
-  display: grid; 
-  place-items: center; 
-  font-size: 1.25rem;
+.toolbar-spacer {
+  width: 3rem;
+  height: 3rem;
 }
 
-.spacer { 
-  width: 3rem; // Compensa o tamanho do botão de voltar para centralizar o h1
+.icon-button {
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 1.1rem;
+  color: $color-copper;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 28px rgba(166, 110, 82, 0.1);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:hover {
+    background: rgba(255, 226, 220, 0.6);
+  }
 }
 
 .header-info {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.25rem;
 
   .icon-wrapper {
+    flex: 0 0 auto;
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
+    color: $color-primary;
     background: #fff0eb;
-    color: #ef8588;
     display: grid;
     place-items: center;
-    font-size: 1.5rem;
+    font-size: 1.45rem;
   }
 
   h2 {
     margin: 0 0 0.25rem;
-    color: #4d2f22;
+    color: $color-brown-dark;
     font-size: 1.15rem;
+    font-weight: 800;
   }
 
   p {
     margin: 0;
-    color: #735345;
+    color: $color-brown-soft;
     font-size: 0.9rem;
-    line-height: 1.4;
+    line-height: 1.45;
   }
 }
 
 .form-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid;
+  gap: 1.35rem;
 }
 
 .input-group {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.5rem;
 
   label {
-    color: #4d2f22;
-    font-weight: 600;
-    font-size: 0.95rem;
     margin-left: 0.25rem;
+    color: $color-brown-dark;
+    font-size: 0.92rem;
+    font-weight: 700;
   }
 }
 
 .custom-input {
   width: 100%;
-  padding: 1.1rem 1.25rem;
+  min-height: 3.75rem;
+  padding: 0 1rem;
   border: 1px solid rgba(196, 126, 93, 0.14);
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.8);
-  color: #573425;
-  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  color: $color-brown;
   font-family: inherit;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 
   &::placeholder {
     color: #b59b90;
   }
 
+  &:hover {
+    border-color: $color-primary;
+  }
+
   &:focus {
-    border-color: #ef8588;
+    border-color: $color-primary;
     box-shadow: 0 0 0 3px rgba(239, 133, 136, 0.15);
+    background: #fff;
   }
 }
 
@@ -117,51 +156,173 @@
   display: flex;
   align-items: center;
 
-  i {
+  > i {
     position: absolute;
-    left: 1.25rem;
-    color: #bf7150;
-  }
-
-  .custom-input {
-    padding-left: 3rem;
+    left: 1rem;
+    z-index: 2;
+    color: $color-copper;
+    font-size: 1rem;
+    pointer-events: none;
   }
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
+}
 
-  .btn-primary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+.btn-primary,
+.btn-ghost {
+  width: 100%;
+  min-height: 3.45rem;
+  border-radius: 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.btn-primary {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+  box-shadow: 0 14px 28px rgba(237, 116, 123, 0.25);
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.btn-ghost {
+  border: 1px solid rgba(196, 126, 93, 0.18);
+  color: $color-copper-dark;
+  background: rgba(255, 255, 255, 0.72);
+
+  &:hover {
+    border-color: rgba(239, 133, 136, 0.35);
+    background: rgba(255, 226, 220, 0.55);
+  }
+}
+
+:host ::ng-deep {
+  .whatsapp-mask {
+    display: block;
     width: 100%;
-    padding: 1.1rem;
-    border: none;
-    border-radius: 1rem;
-    background: #ef8588;
-    color: #fff;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
-
-    &:active { transform: scale(0.98); }
-    &:disabled { background: #f7b2b4; cursor: not-allowed; }
   }
 
-  .btn-ghost {
+  .whatsapp-mask .p-inputtext {
     width: 100%;
-    padding: 1rem;
-    border: none;
-    background: transparent;
-    color: #bf7150;
-    font-weight: 600;
+    min-height: 3.75rem;
+    padding: 0 1rem 0 3rem;
+    border: 1px solid rgba(196, 126, 93, 0.14);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.82);
+    color: $color-brown;
+    font-family: inherit;
     font-size: 1rem;
-    cursor: pointer;
+    outline: none;
+    box-shadow: none;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .whatsapp-mask .p-inputtext::placeholder {
+    color: #b59b90;
+  }
+
+  .whatsapp-mask .p-inputtext:hover {
+    border-color: $color-primary;
+  }
+
+  .whatsapp-mask .p-inputtext:enabled:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba(239, 133, 136, 0.15);
+    background: #fff;
+  }
+}
+
+@include respond-down(sm) {
+  .page-container {
+    padding-inline: 0.85rem;
+  }
+
+  .toolbar {
+    grid-template-columns: 2.75rem 1fr 2.75rem;
+  }
+
+  .toolbar-spacer,
+  .icon-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .header-info {
+    align-items: flex-start;
+    margin-bottom: 2rem;
+
+    .icon-wrapper {
+      width: 3.15rem;
+      height: 3.15rem;
+      font-size: 1.3rem;
+    }
+  }
+
+  .form-layout {
+    gap: 1.2rem;
+  }
+}
+
+@include respond-up(md) {
+  .page-container {
+    padding-top: 2rem;
+    padding-bottom: 7rem;
+  }
+
+  .form-shell {
+    max-width: 46rem;
+  }
+
+  .actions {
+    margin-top: 1rem;
+  }
+}
+
+@include respond-up(lg) {
+  .form-shell {
+    max-width: 52rem;
+  }
+
+  .form-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25rem;
+    row-gap: 1.35rem;
+  }
+
+  .input-group:first-child {
+    grid-column: span 2;
+  }
+
+  .actions {
+    grid-column: span 2;
+    grid-template-columns: 1fr 1fr;
   }
 }

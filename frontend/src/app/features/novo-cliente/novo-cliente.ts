@@ -6,10 +6,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ClienteService } from '../../core/service/cliente.service';
 import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
 import { DialogService } from '../../core/service/dialog.service';
+import { InputMaskModule } from 'primeng/inputmask';
 
 @Component({
   selector: 'app-novo-cliente',
-  imports: [ReactiveFormsModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule, InputMaskModule],
   templateUrl: './novo-cliente.html',
   styleUrl: './novo-cliente.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,10 +47,11 @@ export class NovoCliente {
       return;
     }
     const dados = this.form.getRawValue();
+
     const payload = {
       nomeCompleto: dados.nomeCompleto.trim(),
       apelido: dados.apelido.trim() || undefined,
-      whatsapp: dados.whatsapp.trim(),
+      whatsapp: this.limparMascaraWhatsapp(dados.whatsapp),
     };
 
     this.salvando.set(true);
@@ -113,5 +115,9 @@ export class NovoCliente {
       return apiError.message;
     }
     return 'Não foi possível salvar a cliente.';
+  }
+
+  private limparMascaraWhatsapp(whatsapp: string): string {
+    return whatsapp.replace(/\D/g, '');
   }
 }
