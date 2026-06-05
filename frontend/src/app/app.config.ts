@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -8,12 +8,17 @@ import { PeonyTheme } from './core/theme/peony-theme';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import ptBr from 'primelocale/pt-br.json';
 import { authInterceptor } from './core/interceptor/auth.interceptor';
+import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes), provideClientHydration(withEventReplay()),
     provideHttpClient(withInterceptors([authInterceptor])),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
+    }),
     providePrimeNG({
       theme: {
         preset: PeonyTheme,
@@ -23,6 +28,6 @@ export const appConfig: ApplicationConfig = {
       }, translation: ptBr['pt-BR']
     }),
     MessageService,
-    ConfirmationService
+    ConfirmationService,
   ]
 };
