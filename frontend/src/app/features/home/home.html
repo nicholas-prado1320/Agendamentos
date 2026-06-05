@@ -45,7 +45,31 @@
             <strong>{{ agendamento.hora }}</strong>
           </div>
 
-          <span class="status-pill">{{ formatarStatus(agendamento.status) }}</span>
+          <div class="appointment-header-actions">
+            <span class="status-pill" [class.in-progress]="agendamento.status === 'EM_ATENDIMENTO'"> {{ formatarStatus(agendamento.status) }} </span>
+
+            @if (podeIniciar(agendamento)) {
+            <button
+              type="button"
+              class="small-action-button start-small-button"
+              aria-label="Iniciar atendimento"
+              [disabled]="processandoAgendamentoId() === agendamento.id"
+              (click)="iniciarAtendimento(agendamento)"
+            >
+              <i class="pi pi-play"></i>
+            </button>
+            } @if (podeConcluir(agendamento)) {
+            <button
+              type="button"
+              class="small-action-button finish-small-button"
+              aria-label="Concluir atendimento"
+              [disabled]="processandoAgendamentoId() === agendamento.id"
+              (click)="concluirAtendimento(agendamento)"
+            >
+              <i class="pi pi-check"></i>
+            </button>
+            }
+          </div>
         </div>
 
         <div class="appointment-body">

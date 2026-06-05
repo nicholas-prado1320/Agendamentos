@@ -194,6 +194,14 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   }
 }
 
+.appointment-header-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+}
+
 .status-pill {
   max-width: 9.5rem;
   padding: 0.42rem 0.7rem;
@@ -203,6 +211,45 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   font-size: 0.72rem;
   font-weight: 800;
   white-space: nowrap;
+
+  &.in-progress {
+    color: #15803d;
+    background: #dcfce7;
+  }
+}
+
+.small-action-button {
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 0;
+  border-radius: 0.8rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background 0.2s ease;
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.start-small-button {
+  color: #0284c7;
+  background: #e0f2fe;
+}
+
+.finish-small-button {
+  color: #15803d;
+  background: #dcfce7;
 }
 
 .appointment-body {
@@ -351,6 +398,21 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
   .appointment-card {
     padding: 0.9rem;
+  }
+
+  .appointment-header {
+    align-items: flex-start;
+  }
+
+  .appointment-header-actions {
+    gap: 0.35rem;
+  }
+
+  .small-action-button {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.75rem;
+    font-size: 0.8rem;
   }
 
   .appointment-body {
