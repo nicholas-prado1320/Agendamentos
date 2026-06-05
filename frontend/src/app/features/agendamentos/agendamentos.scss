@@ -4,30 +4,40 @@
 :host {
   display: block;
   min-height: 100dvh;
-  background: $color-bg;
+  color: $color-brown;
   font-family: $font-main;
 }
 
+$page-padding: clamp(1rem, 5vw, 18rem);
+
 .page-container {
-  width: min(100%, 520px);
-  min-height: 100dvh;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 6.5rem;
   position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  padding: 1.5rem $page-padding 6.5rem;
+  overflow-x: hidden;
 }
 
 .toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3rem 1fr 3rem;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 1.35rem;
 
   h1 {
     margin: 0;
     color: $color-brown-dark;
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.03rem;
   }
+}
+
+.toolbar-spacer {
+  width: 3rem;
+  height: 3rem;
 }
 
 .icon-button {
@@ -35,8 +45,9 @@
   height: 3rem;
   border: 0;
   border-radius: 1.1rem;
-  background: transparent;
   color: $color-copper;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 28px rgba(166, 110, 82, 0.1);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -50,29 +61,16 @@
   }
 
   &:hover {
-    background: rgba(255, 226, 220, 0.45);
-  }
-}
-
-.add-button {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 50%;
-  color: #fff;
-  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
-  box-shadow: 0 10px 20px rgba(237, 116, 123, 0.22);
-
-  &:hover {
-    background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+    background: rgba(255, 226, 220, 0.6);
   }
 }
 
 .filters-section {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.65rem;
   margin-bottom: 1.4rem;
   overflow-x: auto;
-  padding-bottom: 0.2rem;
+  padding-bottom: 0.25rem;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -81,20 +79,23 @@
 }
 
 .filter-chip {
+  min-width: max-content;
   min-height: 2.65rem;
-  padding: 0 1.05rem;
+  padding: 0 1.1rem;
   border: 1px solid rgba(196, 126, 93, 0.14);
   border-radius: 999px;
   color: $color-brown-soft;
   background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 24px rgba(166, 110, 82, 0.06);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
   transition:
     transform 0.2s ease,
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:active {
     transform: scale(0.96);
@@ -104,59 +105,102 @@
     color: #fff;
     border-color: $color-primary;
     background: linear-gradient(135deg, $color-primary, $color-primary-dark);
-    box-shadow: 0 10px 20px rgba(237, 116, 123, 0.2);
+    box-shadow: 0 10px 20px rgba(237, 116, 123, 0.22);
   }
 }
 
 .appointments-list {
   display: grid;
-  gap: 0.85rem;
+  gap: clamp(1rem, 2vw, 1.35rem);
 }
 
 .appointment-card {
-  min-height: 5.75rem;
+  width: 100%;
+  padding: 1rem;
   border: 1px solid rgba(196, 126, 93, 0.14);
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.82);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.84);
   box-shadow: 0 14px 30px rgba(166, 110, 82, 0.11);
-  display: grid;
-  grid-template-columns: 6.5rem 1fr;
-  overflow: hidden;
 }
 
-.appointment-time-column {
-  color: $color-primary-dark;
-  background: linear-gradient(135deg, #ffe3e3, #fff0ef);
+.appointment-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-}
-
-.appointment-date {
-  color: #d17578;
-  font-size: 0.8rem;
-  font-weight: 600;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
 }
 
 .appointment-time {
-  font-size: 1.3rem;
-  font-weight: 800;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: $color-primary-dark;
+
+  i {
+    font-size: 0.95rem;
+  }
+
+  div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  strong {
+    font-size: 1.25rem;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  span {
+    color: #d17578;
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
 }
 
-.appointment-content {
-  min-width: 0;
-  padding: 0.95rem 0.75rem 0.95rem 1rem;
+.status-pill {
+  max-width: 9.5rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 999px;
+  color: $color-primary-dark;
+  background: #fff0f0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+
+  &.done {
+    color: #15803d;
+    background: #dcfce7;
+  }
+
+  &.canceled {
+    color: #991b1b;
+    background: #fee2e2;
+  }
+
+  &.in-progress {
+    color: #0369a1;
+    background: #e0f2fe;
+  }
+
+  &.deleted {
+    color: #6b7280;
+    background: #f3f4f6;
+  }
+}
+
+.appointment-body {
   display: grid;
-  grid-template-columns: 3.45rem minmax(0, 1fr) auto;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .client-avatar {
-  width: 3.45rem;
-  height: 3.45rem;
+  width: 3.5rem;
+  height: 3.5rem;
   border-radius: 50%;
   color: #70402e;
   background: #fff0eb;
@@ -168,56 +212,87 @@
 .appointment-info {
   min-width: 0;
   display: grid;
-  gap: 0.35rem;
+  gap: 0.32rem;
 
   strong {
     color: $color-brown-dark;
     font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
+}
 
-  span {
-    color: #91695c;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.service-name {
+  color: #91695c;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
 
   i {
-    margin-right: 0.25rem;
+    margin-top: 0.15rem;
     color: #e48a80;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
+}
+
+.service-price {
+  width: fit-content;
+  margin-top: 0.15rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  color: $color-copper-dark;
+  background: #fff3ee;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .appointment-actions {
   display: flex;
-  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.45rem;
+  margin-top: 1rem;
 }
 
-.status-pill {
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  color: #e47b78;
-  background: #fff0f0;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.details-button {
-  width: 2rem;
-  height: 2rem;
+.action-button {
+  width: 2.35rem;
+  height: 2.35rem;
   border: 0;
-  border-radius: 0.8rem;
-  color: #cf795c;
-  background: transparent;
+  border-radius: 0.85rem;
   display: grid;
   place-items: center;
+  font-size: 1rem;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &.success {
+    color: #15803d;
+    background: #dcfce7;
+  }
+
+  &.warning {
+    color: #d94f61;
+    background: #fff0f0;
+  }
+
+  &.danger {
+    color: #991b1b;
+    background: #fee2e2;
+  }
+
+  &.info {
+    color: #0369a1;
+    background: #e0f2fe;
+  }
 }
 
 .empty-state {
@@ -233,7 +308,7 @@
   align-content: center;
   gap: 0.5rem;
 
-  i {
+  > i {
     margin-bottom: 0.4rem;
     color: #eec5c6;
     font-size: 2.5rem;
@@ -268,147 +343,97 @@
   align-items: center;
   gap: 0.45rem;
   cursor: pointer;
+
+  i {
+    margin: 0;
+    color: #fff;
+    font-size: 1rem;
+  }
 }
 
 .floating-button {
   position: fixed;
-  right: max(1.35rem, calc((100vw - 520px) / 2 + 1.35rem));
-  bottom: 1.8rem;
-  width: 4rem;
-  height: 4rem;
+  right: clamp(1.25rem, 5vw, 4rem);
+  bottom: clamp(1.5rem, 4vw, 3rem);
+  width: clamp(4.2rem, 8vw, 4.8rem);
+  height: clamp(4.2rem, 8vw, 4.8rem);
   border: 0;
   border-radius: 50%;
   color: #fff;
-  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
-  box-shadow: 0 10px 20px rgba(237, 116, 123, 0.35);
+  background: linear-gradient(135deg, #f19a95, #ed747b);
+  box-shadow: 0 20px 36px rgba(237, 116, 123, 0.35);
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.2s;
+  z-index: 10;
+  transition: transform 0.2s ease;
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
   i {
-    font-size: 1.5rem;
+    font-size: clamp(1.7rem, 4vw, 2rem);
   }
 }
 
 @include respond-down(sm) {
   .page-container {
-    padding-inline: 1rem;
+    padding-inline: 0.85rem;
+  }
+
+  .toolbar {
+    grid-template-columns: 2.75rem 1fr 2.75rem;
+  }
+
+  .toolbar-spacer,
+  .icon-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .filters-section {
+    gap: 0.5rem;
+  }
+
+  .filter-chip {
+    min-height: 2.5rem;
+    padding-inline: 0.95rem;
+    font-size: 0.84rem;
   }
 
   .appointment-card {
-    grid-template-columns: 5.5rem 1fr;
+    padding: 0.9rem;
   }
 
-  .appointment-time {
-    font-size: 1.1rem;
-  }
-
-  .appointment-date {
-    font-size: 0.75rem;
-  }
-
-  .status-pill {
-    display: none;
-  }
-
-  .appointment-content {
-    grid-template-columns: 3rem minmax(0, 1fr) auto;
-    gap: 0.6rem;
+  .appointment-body {
+    grid-template-columns: 3.15rem minmax(0, 1fr);
   }
 
   .client-avatar {
-    width: 3rem;
-    height: 3rem;
+    width: 3.15rem;
+    height: 3.15rem;
+  }
+
+  .status-pill {
+    max-width: 8rem;
+    font-size: 0.68rem;
   }
 }
 
 @include respond-up(md) {
   .page-container {
-    width: min(100%, 720px);
     padding-top: 2rem;
-  }
-
-  .appointments-list {
-    gap: 1rem;
+    padding-bottom: 7rem;
   }
 
   .appointment-card {
-    grid-template-columns: 7rem 1fr;
+    padding: 1.15rem;
   }
 }
 
 @include respond-up(lg) {
-  .page-container {
-    width: min(100%, 960px);
+  .appointment-card {
+    min-height: 7.2rem;
   }
-
-  .appointments-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .empty-state {
-    grid-column: 1 / -1;
-  }
-}
-
-.appointment-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.action-button {
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 0;
-  border-radius: 0.8rem;
-  display: grid;
-  place-items: center;
-  font-size: 1rem;
-  background: $color-bg-soft;
-}
-
-.action-button.success {
-  color: #15803d;
-  background: #dcfce7;
-}
-
-.action-button.warning {
-  color: #d94f61;
-  background: #fff0f0;
-}
-
-.action-button.danger {
-  color: #991b1b;
-  background: #fee2e2;
-}
-
-.status-pill.done {
-  color: #15803d;
-  background: #dcfce7;
-}
-
-.status-pill.canceled {
-  color: #991b1b;
-  background: #fee2e2;
-}
-
-.action-button.info {
-  color: #0369a1;
-  background: #e0f2fe;
-}
-
-.status-pill.in-progress {
-  color: #0369a1;
-  background: #e0f2fe;
-}
-
-.status-pill.deleted {
-  color: #6b7280;
-  background: #f3f4f6;
 }

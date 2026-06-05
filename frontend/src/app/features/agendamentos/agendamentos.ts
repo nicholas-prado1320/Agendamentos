@@ -10,7 +10,7 @@ import { AuthService } from '../../core/service/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
 
-type FiltroAgendamento = 'todos' | 'hoje' | 'semana' | 'historico';
+type FiltroAgendamento = '' | 'hoje' | 'semana' | 'todos' | 'historico';
 
 @Component({
   selector: 'app-agendamentos',
@@ -28,16 +28,16 @@ export class Agendamentos {
 
   public readonly authService = inject(AuthService);
 
-  public readonly filtroSelecionado = signal<FiltroAgendamento>('todos');
+  public readonly filtroSelecionado = signal<FiltroAgendamento>('hoje');
   public readonly agendamentos = signal<Agendamento[]>([]);
   public readonly carregando = signal(false);
 
   menuAberto = false;
 
   public readonly filtros: { label: string; value: FiltroAgendamento }[] = [
-    { label: 'Todos', value: 'todos' },
     { label: 'Hoje', value: 'hoje' },
     { label: 'Semana', value: 'semana' },
+    { label: 'Todos', value: 'todos' },
     { label: 'Histórico', value: 'historico' },
   ];
 
@@ -56,7 +56,7 @@ export class Agendamentos {
       if (filtro === 'hoje' || filtro === 'semana' || filtro === 'todos' || filtro === 'historico') {
         this.filtroSelecionado.set(filtro);
       } else {
-        this.filtroSelecionado.set('todos');
+        this.filtroSelecionado.set('hoje');
       }
       this.carregarAgendamentos();
     });
@@ -93,9 +93,8 @@ export class Agendamentos {
       rejectLabel: 'Cancelar',
       accept: () => {
         this.agendamentoService.concluir(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-          next: (agendamentoAtualizado) => {
-            const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
-            this.agendamentos.update((agendamentos) => agendamentos.map((item) => (item.id === id ? agendamento : item)));
+          next: () => {
+            this.carregarAgendamentos();
             this.dialogService.success('O agendamento foi concluído com sucesso.', 'Agendamento concluído');
           },
           error: () => {
@@ -117,9 +116,8 @@ export class Agendamentos {
       rejectButtonStyleClass: 'p-button-text',
       accept: () => {
         this.agendamentoService.cancelar(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-          next: (agendamentoAtualizado) => {
-            const agendamento = mapAgendamentoResponseToModel(agendamentoAtualizado);
-            this.agendamentos.update((agendamentos) => agendamentos.map((item) => (item.id === id ? agendamento : item)));
+          next: () => {
+            this.carregarAgendamentos();
             this.dialogService.success('O agendamento foi cancelado com sucesso.', 'Agendamento cancelado');
           },
           error: () => {
@@ -145,9 +143,7 @@ export class Agendamentos {
       accept: () => {
         this.agendamentoService.remover(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => {
-            this.agendamentos.update((agendamentos) =>
-              agendamentos.filter((agendamento) => agendamento.id !== id)
-            );
+            this.carregarAgendamentos();
             this.dialogService.success('Agendamento removido com sucesso.', 'Agendamento removido');
           },
           error: () => {

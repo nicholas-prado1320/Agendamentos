@@ -28,7 +28,9 @@ export class AgendamentoService {
   }
 
   listarHorariosDisponiveis(servicoId: number, data: string): Observable<HorarioDisponivelResponse[]> {
-    return this.http.get<HorarioDisponivelResponse[]>(`${this.apiUrl}/horarios-disponiveis`, { params: { servicoId, data } });
+    return this.http.get<HorarioDisponivelResponse[]>(`${this.apiUrl}/horarios-disponiveis`, {
+      params: { servicoId, data },
+    });
   }
 
   criar(request: AgendamentoRequest): Observable<AgendamentoResponse> {

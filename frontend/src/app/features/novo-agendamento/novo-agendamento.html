@@ -1,70 +1,159 @@
 <main class="page-container">
-  <header class="toolbar">
-    <button type="button" class="icon-button" aria-label="Voltar" (click)="cancelar()">
-      <i class="pi pi-arrow-left"></i>
-    </button>
-    <h1>Novo agendamento</h1>
-    <div class="spacer"></div>
-  </header>
+  <div class="form-shell">
+    <header class="toolbar">
+      <button type="button" class="icon-button" aria-label="Voltar" (click)="cancelar()">
+        <i class="pi pi-arrow-left"></i>
+      </button>
 
-  <section class="header-info">
-    <div class="icon-wrapper">
-      <i class="pi pi-calendar-plus"></i>
+      <h1>Novo agendamento</h1>
+
+      <div class="toolbar-spacer"></div>
+    </header>
+
+    <section class="header-info">
+      <div class="icon-wrapper">
+        <i class="pi pi-calendar-plus"></i>
+      </div>
+
+      <div>
+        <h2>Marcar horário</h2>
+
+        <p>@if (authService.isManicure()) { Selecione a cliente e defina os detalhes do atendimento. } @else { Escolha o serviço, a data e o horário desejado. }</p>
+      </div>
+    </section>
+
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="form-layout">
+      @if (authService.isManicure()) {
+      <div class="input-group">
+        <label for="clienteId">Cliente *</label>
+
+        <p-select inputId="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" appendTo="body" class="prime-input-override" />
+      </div>
+      }
+
+      <div class="input-group">
+        <label for="servicoId">Serviço *</label>
+
+        <p-select inputId="servicoId" formControlName="servicoId" [options]="servicos()" optionLabel="nome" optionValue="id" placeholder="Qual serviço será feito?" appendTo="body" class="prime-input-override" />
+      </div>
+
+      <div class="input-group">
+        <label for="data">Data *</label>
+
+        <p-datepicker inputId="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA" [minDate]="dataMinima" class="prime-input-override" />
+      </div>
+
+      <div class="input-group">
+        <label>Hora *</label>
+
+        <button
+          type="button"
+          class="schedule-picker-button"
+          [class.has-value]="form.controls.hora.value"
+          [class.invalid]="horarioTemErro()"
+          [disabled]="!temServicoEDataSelecionados() || carregandoHorarios()"
+          (click)="abrirModalHorarios()"
+        >
+          <span> @if (carregandoHorarios()) { Carregando horários... } @else { {{ obterTextoHorarioSelecionado() }} } </span>
+
+          <i class="pi pi-clock"></i>
+        </button>
+
+        @if (!temServicoEDataSelecionados()) {
+        <small class="field-hint">Selecione o serviço e a data para ver os horários.</small>
+        } @if (temServicoEDataSelecionados() && horariosGrade().length === 0 && !carregandoHorarios()) {
+        <small class="field-hint">Nenhum horário disponível para esta data e serviço.</small>
+        } @if (horarioTemErro()) {
+        <small class="field-error">Selecione um horário.</small>
+        }
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" [disabled]="form.invalid || salvando()">
+          <i class="pi pi-save"></i>
+
+          @if (salvando()) { Salvando... } @else { Confirmar agendamento }
+        </button>
+
+        <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<p-dialog
+  [visible]="modalHorariosAberto()"
+  (visibleChange)="modalHorariosAberto.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [dismissableMask]="true"
+  styleClass="schedule-dialog"
+>
+  <section class="schedule-modal-content">
+    <header class="schedule-modal-header">
+      <div>
+        <span>Selecionar horário</span>
+        <h2>Grade de atendimento</h2>
+
+        @if (obterServicoSelecionado()) {
+        <p>{{ obterServicoSelecionado()?.nome }} @if (obterDuracaoServicoSelecionado()) { · {{ obterDuracaoServicoSelecionado() }} }</p>
+        }
+      </div>
+
+      <button type="button" class="modal-close-button" aria-label="Fechar" (click)="fecharModalHorarios()">
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    @if (carregandoHorarios()) {
+    <div class="schedule-loading">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando horários...</p>
     </div>
-    <div>
-      <h2>Marcar horário</h2>
-      <p>@if (authService.isManicure()) { Selecione a cliente e defina os detalhes do atendimento. } @else { Escolha o serviço, a data e o horário desejado. }</p>
+    } @else if (horariosGrade().length > 0) {
+    <div class="schedule-grid">
+      @for (horario of horariosGrade(); track horario.hora) {
+      <button
+        type="button"
+        class="schedule-time-card"
+        [class.available]="horario.disponivel"
+        [class.unavailable]="!horario.disponivel"
+        [class.selected]="horario.selecionado"
+        [disabled]="!horario.disponivel"
+        (click)="selecionarHorario(horario)"
+      >
+        <strong>{{ horario.hora }}</strong>
+
+        <span> @if (horario.selecionado) { Selecionado } @else if (horario.disponivel) { Livre } @else { Ocupado } </span>
+      </button>
+      }
     </div>
-  </section>
+    } @else {
+    <div class="schedule-empty">
+      <i class="pi pi-calendar-times"></i>
+      <p>Nenhum horário disponível.</p>
+      <span>Escolha outra data ou outro serviço.</span>
+    </div>
+    } @if (form.controls.hora.value) {
+    <div class="selected-time-summary">
+      <i class="pi pi-clock"></i>
 
-  <form [formGroup]="form" (ngSubmit)="salvar()" class="form-layout">
-    @if (authService.isManicure()) {
-    <div class="input-group">
-      <label for="clienteId">Cliente *</label>
+      <div>
+        <strong>{{ obterResumoHorarioSelecionado() }}</strong>
 
-      <p-select id="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" class="prime-input-override" />
+        @if (obterDuracaoServicoSelecionado()) {
+        <span>Duração: {{ obterDuracaoServicoSelecionado() }}</span>
+        }
+      </div>
     </div>
     }
 
-    <div class="input-group">
-      <label for="servicoId">Serviço *</label>
+    <footer class="schedule-modal-footer">
+      <button type="button" class="modal-secondary-button" (click)="limparHorarioSelecionado()">Limpar</button>
 
-      <p-select id="servicoId" formControlName="servicoId" [options]="servicos()" optionLabel="nome" optionValue="id" placeholder="Qual serviço será feito?" class="prime-input-override" />
-    </div>
-
-    <div class="input-group">
-      <label for="data">Data *</label>
-
-      <p-datepicker inputId="data" formControlName="data" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA" [minDate]="dataMinima" class="prime-input-override" />
-    </div>
-
-    <div class="input-group">
-      <label for="hora">Hora *</label>
-
-      <p-select
-        id="hora"
-        formControlName="hora"
-        [options]="horariosDisponiveis()"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Selecione o horário"
-        class="prime-input-override"
-        [disabled]="!temServicoEDataSelecionados() || carregandoHorarios() || horariosDisponiveis().length === 0"
-      />
-
-      @if (temServicoEDataSelecionados() && horariosDisponiveis().length === 0 && !carregandoHorarios()) {
-      <small class="field-hint">Nenhum horário disponível para esta data e serviço.</small>
-      }
-    </div>
-
-    <div class="actions">
-      <button type="submit" class="btn-primary" [disabled]="form.invalid || salvando()">
-        <i class="pi pi-save"></i>
-
-        @if (salvando()) { Salvando... } @else { Confirmar agendamento }
-      </button>
-
-      <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
-    </div>
-  </form>
-</main>
+      <button type="button" class="modal-primary-button" [disabled]="!form.controls.hora.value" (click)="confirmarHorarioSelecionado()">Confirmar horário</button>
+    </footer>
+  </section>
+</p-dialog>

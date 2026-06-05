@@ -1,9 +1,4 @@
-export type StatusAgendamento =
-  | 'AGENDADO'
-  | 'EM_ATENDIMENTO'
-  | 'CONCLUIDO'
-  | 'CANCELADO'
-  | 'EXCLUIDO';
+export type StatusAgendamento = 'AGENDADO' | 'EM_ATENDIMENTO' | 'CONCLUIDO' | 'CANCELADO' | 'EXCLUIDO';
 
 export interface AgendamentoRequest {
   clienteId: number;
@@ -17,7 +12,7 @@ export interface AgendamentoResponse {
   cliente: {
     id: number;
     nomeCompleto: string;
-    apelido: string | null;
+    apelido?: string | null;
   };
   servico: {
     id: number;
@@ -32,4 +27,5 @@ export interface AgendamentoResponse {
 
 export interface HorarioDisponivelResponse {
   hora: string;
+  disponivel: boolean;
 }
