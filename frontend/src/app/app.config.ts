@@ -6,7 +6,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import { PeonyTheme } from './core/theme/peony-theme';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import ptBr from 'primelocale/pt-br.json';
+import ptBr from 'primelocale/pt-BR.json';
 import { authInterceptor } from './core/interceptor/auth.interceptor';
 import { provideServiceWorker } from '@angular/service-worker';
 
