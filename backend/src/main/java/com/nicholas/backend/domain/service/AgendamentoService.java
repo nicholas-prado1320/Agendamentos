@@ -2,16 +2,18 @@ package com.nicholas.backend.domain.service;
 
 import com.nicholas.backend.domain.entity.Agendamento;
 import com.nicholas.backend.domain.entity.Cliente;
+import com.nicholas.backend.domain.entity.HorarioAtendimento;
 import com.nicholas.backend.domain.entity.Servico;
 import com.nicholas.backend.domain.entity.StatusAgendamento;
 import com.nicholas.backend.domain.repository.AgendamentoRepository;
 import com.nicholas.backend.dto.request.AgendamentoRequest;
 import com.nicholas.backend.dto.response.AgendamentoResponse;
-import com.nicholas.backend.dto.response.HorarioDisponivelResponse;
 import com.nicholas.backend.dto.response.ClienteResumoResponse;
+import com.nicholas.backend.dto.response.HorarioDisponivelResponse;
 import com.nicholas.backend.dto.response.ServicoResumoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,11 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AgendamentoService {
 
-    private final AgendamentoRepository agendamentoRepository;
-    private final UsuarioAutenticadoService usuarioAutenticadoService;
-    private final ClienteService clienteService;
-    private final ServicoService servicoService;
-    private final HorarioAtendimentoService horarioAtendimentoService;
+    private static final int INTERVALO_GRADE_MINUTOS = 15;
 
     private static final List<StatusAgendamento> STATUS_ATIVOS = List.of(
             StatusAgendamento.AGENDADO,
@@ -39,6 +37,11 @@ public class AgendamentoService {
             StatusAgendamento.EXCLUIDO
     );
 
+    private final AgendamentoRepository agendamentoRepository;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
+    private final ClienteService clienteService;
+    private final ServicoService servicoService;
+    private final HorarioAtendimentoService horarioAtendimentoService;
 
     public List<AgendamentoResponse> listar() {
         if (usuarioAutenticadoService.isCliente()) {
@@ -88,7 +91,6 @@ public class AgendamentoService {
 
     public List<AgendamentoResponse> listarSemana() {
         LocalDate hoje = LocalDate.now();
-
         LocalDate inicioSemana = hoje.with(DayOfWeek.MONDAY);
         LocalDate fimSemana = hoje.with(DayOfWeek.SUNDAY);
 
@@ -144,6 +146,57 @@ public class AgendamentoService {
                 .toList();
     }
 
+    public List<HorarioDisponivelResponse> listarHorariosDisponiveis(Long servicoId, LocalDate data) {
+        Servico servico = servicoService.buscarEntidadePorId(servicoId);
+
+        if (!Boolean.TRUE.equals(servico.getAtivo())) {
+            throw new RuntimeException("O serviço selecionado está inativo.");
+        }
+
+        if (data.isBefore(LocalDate.now())) {
+            throw new RuntimeException("Não é possível listar horários para uma data passada.");
+        }
+
+        int duracaoServico = converterDuracaoParaMinutos(servico.getDuracao());
+        validarDuracaoMultiplaDaGrade(duracaoServico);
+
+        HorarioAtendimento horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(
+                data.getDayOfWeek()
+        );
+
+        LocalTime inicioExpediente = horarioAtendimento.getHoraInicio();
+        LocalTime fimExpediente = horarioAtendimento.getHoraFim();
+
+        List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatusInOrderByHoraAsc(
+                data,
+                STATUS_ATIVOS
+        );
+
+        List<HorarioDisponivelResponse> horarios = new ArrayList<>();
+
+        LocalTime horarioAtual = inicioExpediente;
+
+        while (!horarioAtual.plusMinutes(duracaoServico).isAfter(fimExpediente)) {
+            boolean disponivel = horarioEstaDisponivel(
+                    horarioAtual,
+                    duracaoServico,
+                    fimExpediente,
+                    data,
+                    agendamentosDoDia
+            );
+
+            horarios.add(new HorarioDisponivelResponse(
+                    horarioAtual.toString(),
+                    disponivel
+            ));
+
+            horarioAtual = horarioAtual.plusMinutes(INTERVALO_GRADE_MINUTOS);
+        }
+
+        return horarios;
+    }
+
+    @Transactional
     public AgendamentoResponse criar(AgendamentoRequest request) {
         Cliente cliente;
 
@@ -181,6 +234,9 @@ public class AgendamentoService {
             throw new RuntimeException("O serviço selecionado está inativo.");
         }
 
+        validarDataHoraFutura(request.data(), request.hora());
+        validarHoraNaGrade(request.hora());
+        validarDuracaoMultiplaDaGrade(converterDuracaoParaMinutos(servico.getDuracao()));
         validarConflitoDeHorario(request, servico);
 
         Agendamento agendamento = Agendamento.builder()
@@ -188,6 +244,7 @@ public class AgendamentoService {
                 .servico(servico)
                 .data(request.data())
                 .hora(request.hora())
+                .status(StatusAgendamento.AGENDADO)
                 .build();
 
         Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
@@ -195,6 +252,7 @@ public class AgendamentoService {
         return toResponse(agendamentoSalvo);
     }
 
+    @Transactional
     public AgendamentoResponse iniciar(Long id) {
         if (usuarioAutenticadoService.isCliente()) {
             throw new RuntimeException("Cliente não pode iniciar atendimento.");
@@ -222,6 +280,7 @@ public class AgendamentoService {
         return toResponse(agendamentoRepository.save(agendamento));
     }
 
+    @Transactional
     public AgendamentoResponse concluir(Long id) {
         if (usuarioAutenticadoService.isCliente()) {
             throw new RuntimeException("Cliente não pode concluir agendamento.");
@@ -238,6 +297,7 @@ public class AgendamentoService {
         return toResponse(agendamentoRepository.save(agendamento));
     }
 
+    @Transactional
     public AgendamentoResponse cancelar(Long id) {
         Agendamento agendamento = buscarEntidadePorId(id);
 
@@ -252,6 +312,7 @@ public class AgendamentoService {
         return toResponse(agendamentoRepository.save(agendamento));
     }
 
+    @Transactional
     public void remover(Long id) {
         if (usuarioAutenticadoService.isCliente()) {
             throw new RuntimeException("Cliente não pode excluir agendamento.");
@@ -269,7 +330,9 @@ public class AgendamentoService {
     }
 
     private Agendamento buscarEntidadePorId(Long id) {
-        return agendamentoRepository.findById(id).orElseThrow(() -> new RuntimeException("Agendamento não encontrado."));
+        return agendamentoRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado."));
     }
 
     private void validarPermissaoSobreAgendamento(Agendamento agendamento) {
@@ -284,115 +347,33 @@ public class AgendamentoService {
         }
     }
 
-    public List<HorarioDisponivelResponse> listarHorariosDisponiveis(Long servicoId, LocalDate data) {
-        Servico servico = servicoService.buscarEntidadePorId(servicoId);
-
-        if (!Boolean.TRUE.equals(servico.getAtivo())) {
-            throw new RuntimeException("O serviço selecionado está inativo.");
-        }
-
-        if (data.isBefore(LocalDate.now())) {
-            throw new RuntimeException("Não é possível listar horários para uma data passada.");
-        }
-
-        var horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(data.getDayOfWeek());
-
-        int duracaoNovoServico = converterDuracaoParaMinutos(servico.getDuracao());
-
-        LocalTime inicioExpediente = horarioAtendimento.getHoraInicio();
-        LocalTime fimExpediente = horarioAtendimento.getHoraFim();
-
-        if (data.isEqual(LocalDate.now())) {
-            LocalTime agora = LocalTime.now().withSecond(0).withNano(0);
-
-            if (agora.isAfter(inicioExpediente)) {
-                inicioExpediente = arredondarParaProximaHora(agora);
-            }
-        }
-
-        if (!inicioExpediente.isBefore(fimExpediente)) {
-            return List.of();
-        }
-
-        List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatusInOrderByHoraAsc(
-                data,
-                STATUS_ATIVOS
-        );
-
-        List<HorarioDisponivelResponse> horariosDisponiveis = new ArrayList<>();
-
-        LocalTime inicioLivre = inicioExpediente;
-
-        for (Agendamento agendamentoExistente : agendamentosDoDia) {
-            LocalTime inicioAgendado = agendamentoExistente.getHora();
-
-            LocalTime fimAgendado = inicioAgendado.plusMinutes(
-                    converterDuracaoParaMinutos(agendamentoExistente.getServico().getDuracao())
-            );
-
-            if (!fimAgendado.isAfter(inicioLivre)) {
-                continue;
-            }
-
-            if (inicioAgendado.isAfter(inicioLivre)) {
-                adicionarHorariosNoIntervalo(
-                        horariosDisponiveis,
-                        inicioLivre,
-                        inicioAgendado,
-                        duracaoNovoServico
-                );
-            }
-
-            if (fimAgendado.isAfter(inicioLivre)) {
-                inicioLivre = fimAgendado;
-            }
-
-            if (!inicioLivre.isBefore(fimExpediente)) {
-                break;
-            }
-        }
-
-        adicionarHorariosNoIntervalo(
-                horariosDisponiveis,
-                inicioLivre,
-                fimExpediente,
-                duracaoNovoServico
-        );
-
-        return horariosDisponiveis;
-    }
-
-    private LocalTime arredondarParaProximaHora(LocalTime horario) {
-        if (horario.getMinute() == 0) {
-            return horario.withSecond(0).withNano(0);
-        }
-
-        return horario
-                .plusHours(1)
-                .withMinute(0)
-                .withSecond(0)
-                .withNano(0);
-    }
-
-    private void adicionarHorariosNoIntervalo(
-            List<HorarioDisponivelResponse> horariosDisponiveis,
-            LocalTime inicioLivre,
-            LocalTime fimLivre,
-            int duracaoServico
+    private boolean horarioEstaDisponivel(
+            LocalTime horaInicio,
+            int duracaoServico,
+            LocalTime fimExpediente,
+            LocalDate data,
+            List<Agendamento> agendamentosDoDia
     ) {
-        LocalTime horarioAtual = inicioLivre;
+        LocalTime horaFim = horaInicio.plusMinutes(duracaoServico);
 
-        while (!horarioAtual.plusMinutes(duracaoServico).isAfter(fimLivre)) {
-            horariosDisponiveis.add(
-                    new HorarioDisponivelResponse(horarioAtual.toString())
-            );
-
-            horarioAtual = horarioAtual.plusMinutes(duracaoServico);
+        if (horaFim.isAfter(fimExpediente)) {
+            return false;
         }
+
+        if (data.isEqual(LocalDate.now()) && horaInicio.isBefore(LocalTime.now())) {
+            return false;
+        }
+
+        return agendamentosDoDia.stream()
+                .noneMatch((agendamento) -> existeConflito(
+                        horaInicio,
+                        horaFim,
+                        agendamento
+                ));
     }
 
     private void validarConflitoDeHorario(AgendamentoRequest request, Servico servicoNovo) {
-        var horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(
+        HorarioAtendimento horarioAtendimento = horarioAtendimentoService.buscarHorarioAtivoPorDia(
                 request.data().getDayOfWeek()
         );
 
@@ -412,18 +393,61 @@ public class AgendamentoService {
         );
 
         boolean existeConflito = agendamentosDoDia.stream()
-                .anyMatch((agendamentoExistente) -> {
-                    LocalTime inicioExistente = agendamentoExistente.getHora();
-
-                    LocalTime fimExistente = inicioExistente.plusMinutes(
-                            converterDuracaoParaMinutos(agendamentoExistente.getServico().getDuracao())
-                    );
-
-                    return inicioNovo.isBefore(fimExistente) && inicioExistente.isBefore(fimNovo);
-                });
+                .anyMatch((agendamentoExistente) -> existeConflito(
+                        inicioNovo,
+                        fimNovo,
+                        agendamentoExistente
+                ));
 
         if (existeConflito) {
             throw new RuntimeException("Já existe um agendamento ativo nesse intervalo de horário.");
+        }
+    }
+
+    private boolean existeConflito(
+            LocalTime novoInicio,
+            LocalTime novoFim,
+            Agendamento agendamentoExistente
+    ) {
+        LocalTime inicioExistente = agendamentoExistente.getHora();
+
+        LocalTime fimExistente = inicioExistente.plusMinutes(
+                converterDuracaoParaMinutos(agendamentoExistente.getServico().getDuracao())
+        );
+
+        return novoInicio.isBefore(fimExistente) && novoFim.isAfter(inicioExistente);
+    }
+
+    private void validarDataHoraFutura(LocalDate data, LocalTime hora) {
+        LocalDate hoje = LocalDate.now();
+        LocalTime agora = LocalTime.now();
+
+        if (data.isBefore(hoje)) {
+            throw new RuntimeException("Não é possível agendar para uma data passada.");
+        }
+
+        if (data.isEqual(hoje) && hora.isBefore(agora)) {
+            throw new RuntimeException("Não é possível agendar para um horário passado.");
+        }
+    }
+
+    private void validarHoraNaGrade(LocalTime hora) {
+        if (hora.getMinute() % INTERVALO_GRADE_MINUTOS != 0) {
+            throw new RuntimeException("O horário do agendamento deve seguir a grade de 15 em 15 minutos.");
+        }
+
+        if (hora.getSecond() != 0 || hora.getNano() != 0) {
+            throw new RuntimeException("O horário do agendamento deve estar no formato correto.");
+        }
+    }
+
+    private void validarDuracaoMultiplaDaGrade(int duracaoServico) {
+        if (duracaoServico <= 0) {
+            throw new RuntimeException("A duração do serviço deve ser maior que zero.");
+        }
+
+        if (duracaoServico % INTERVALO_GRADE_MINUTOS != 0) {
+            throw new RuntimeException("A duração do serviço deve ser múltipla de 15 minutos.");
         }
     }
 

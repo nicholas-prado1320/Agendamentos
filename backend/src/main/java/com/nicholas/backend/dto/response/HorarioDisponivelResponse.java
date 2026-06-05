@@ -1,6 +1,7 @@
 package com.nicholas.backend.dto.response;
 
 public record HorarioDisponivelResponse(
-        String hora
+        String hora,
+        Boolean disponivel
 ) {
 }

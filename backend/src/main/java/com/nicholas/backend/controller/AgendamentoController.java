@@ -18,6 +18,7 @@ public class AgendamentoController {
 
     private final AgendamentoService agendamentoService;
 
+
     @GetMapping
     public List<AgendamentoResponse> listar() {
         return agendamentoService.listar();
