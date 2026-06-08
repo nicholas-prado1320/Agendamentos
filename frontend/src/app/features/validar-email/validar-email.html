@@ -1,0 +1,40 @@
+<main class="auth-page">
+  <p-card class="auth-card">
+    <ng-template #header>
+      <div class="auth-brand">
+        <p-avatar image="/assets/imagens/LogoPeony.png" shape="square" class="brand-avatar" />
+
+        <div>
+          <p>Agenda do salão</p>
+          <h1>Validar e-mail</h1>
+        </div>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="validar()" class="auth-form">
+      <p class="helper-text">
+        Enviamos um código de validação para o endereço de e-mail
+        <strong>{{ email }}</strong>.
+      </p>
+
+      <div class="otp-field">
+        <p-inputotp formControlName="codigo" [length]="6" [integerOnly]="true" />
+
+        @if (form.controls.codigo.touched && form.controls.codigo.invalid) {
+        <small>Informe o código de 6 dígitos.</small>
+        }
+      </div>
+
+      <button pButton type="submit" label="Validar código" [loading]="carregando()" [disabled]="carregando() || reenviando()"></button>
+
+      <div class="link-row">
+        <span>Não recebeu o código?</span>
+        <button type="button" (click)="reenviarCodigo()" [disabled]="carregando() || reenviando()">Reenviar código</button>
+      </div>
+
+      <div class="link-row">
+        <button type="button" (click)="voltar()">Voltar para login</button>
+      </div>
+    </form>
+  </p-card>
+</main>
