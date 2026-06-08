@@ -1,0 +1,35 @@
+<main class="auth-page">
+  <p-card class="auth-card">
+    <ng-template #header>
+      <div class="auth-brand">
+        <p-avatar image="/assets/imagens/LogoPeony.png" shape="square" class="brand-avatar" />
+
+        <div>
+          <p>Agenda do salão</p>
+          <h1>Recuperar senha</h1>
+        </div>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="enviar()" class="auth-form">
+      <p class="helper-text">Informe seu e-mail para receber uma senha temporária.</p>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <input pInputText id="recuperar-email" type="email" formControlName="email" autocomplete="email" />
+          <label for="recuperar-email">E-mail</label>
+        </p-floatlabel>
+
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small>Informe um e-mail válido.</small>
+        }
+      </div>
+
+      <button pButton type="submit" label="Enviar senha temporária" [loading]="carregando()" [disabled]="carregando()"></button>
+
+      <div class="link-row">
+        <button type="button" (click)="voltar()">Voltar para login</button>
+      </div>
+    </form>
+  </p-card>
+</main>
