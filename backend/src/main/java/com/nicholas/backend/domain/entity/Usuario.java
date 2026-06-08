@@ -38,6 +38,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private Boolean ativo;
 
+    @Column(name = "email_verificado", nullable = false)
+    private Boolean emailVerificado;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
@@ -52,6 +55,10 @@ public class Usuario implements UserDetails {
     public void prePersist() {
         if (this.ativo == null) {
             this.ativo = true;
+        }
+
+        if (this.emailVerificado == null) {
+            this.emailVerificado = false;
         }
 
         this.dataCriacao = LocalDateTime.now();
