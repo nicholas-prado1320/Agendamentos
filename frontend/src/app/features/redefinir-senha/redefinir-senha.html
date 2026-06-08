@@ -1,0 +1,57 @@
+<main class="auth-page">
+  <p-card class="auth-card">
+    <ng-template #header>
+      <div class="auth-brand">
+        <p-avatar image="/assets/imagens/LogoPeony.png" shape="square" class="brand-avatar" />
+
+        <div>
+          <p>Agenda do salão</p>
+          <h1>Alterar senha</h1>
+        </div>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="alterarSenha()" class="auth-form">
+      <p class="helper-text">Informe sua senha atual e escolha uma nova senha para acessar sua conta.</p>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-password inputId="senha-atual" formControlName="senhaAtual" [feedback]="false" [toggleMask]="true" autocomplete="current-password" />
+          <label for="senha-atual">Senha atual</label>
+        </p-floatlabel>
+
+        @if (form.controls.senhaAtual.touched && form.controls.senhaAtual.invalid) {
+        <small>Informe sua senha atual.</small>
+        }
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-password inputId="nova-senha" formControlName="novaSenha" [feedback]="false" [toggleMask]="true" autocomplete="new-password" />
+          <label for="nova-senha">Nova senha</label>
+        </p-floatlabel>
+
+        @if (form.controls.novaSenha.touched && form.controls.novaSenha.invalid) {
+        <small>A senha deve ter no mínimo 6 caracteres.</small>
+        }
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-password inputId="confirmar-nova-senha" formControlName="confirmarSenha" [feedback]="false" [toggleMask]="true" autocomplete="new-password" />
+          <label for="confirmar-nova-senha">Confirmar nova senha</label>
+        </p-floatlabel>
+
+        @if (form.controls.confirmarSenha.touched && form.controls.confirmarSenha.invalid) {
+        <small>Confirme sua nova senha.</small>
+        }
+      </div>
+
+      <button pButton type="submit" label="Alterar senha" [loading]="carregando()" [disabled]="carregando()"></button>
+
+      <div class="link-row">
+        <button type="button" (click)="voltar()">Voltar</button>
+      </div>
+    </form>
+  </p-card>
+</main>
