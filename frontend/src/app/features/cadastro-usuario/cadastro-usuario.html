@@ -1,0 +1,89 @@
+<main class="auth-page">
+  <p-card class="auth-card">
+    <ng-template #header>
+      <div class="auth-brand">
+        <p-avatar image="/assets/imagens/LogoPeony.png" shape="square" class="brand-avatar" />
+
+        <div>
+          <p>Agenda do salão</p>
+          <h1>Criar conta</h1>
+        </div>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="cadastrar()" class="auth-form">
+      <p class="helper-text">Crie sua conta para agendar seus atendimentos de forma rápida.</p>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <input pInputText id="cadastro-nome-completo" type="text" formControlName="nomeCompleto" autocomplete="name" />
+          <label for="cadastro-nome-completo">Nome completo</label>
+        </p-floatlabel>
+
+        @if (form.controls.nomeCompleto.touched && form.controls.nomeCompleto.invalid) {
+        <small>Informe seu nome completo.</small>
+        }
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <input pInputText id="cadastro-email" type="email" formControlName="email" autocomplete="email" />
+          <label for="cadastro-email">E-mail</label>
+        </p-floatlabel>
+
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small>Informe um e-mail válido.</small>
+        }
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-inputmask id="cadastro-whatsapp" formControlName="whatsapp" mask="(99) 99999-9999" autocomplete="tel-national" [unmask]="true" />
+          <label for="cadastro-whatsapp">WhatsApp</label>
+        </p-floatlabel>
+
+        @if (form.controls.whatsapp.touched && form.controls.whatsapp.invalid) {
+        <small>Informe seu WhatsApp.</small>
+        }
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-password inputId="cadastro-senha" formControlName="senha" [feedback]="false" [toggleMask]="true" autocomplete="new-password" />
+          <label for="cadastro-senha">Senha</label>
+        </p-floatlabel>
+
+        @if (form.controls.senha.touched && form.controls.senha.invalid) {
+        <small>A senha deve ter no mínimo 6 caracteres.</small>
+        }
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-password inputId="cadastro-confirmar-senha" formControlName="confirmarSenha" [feedback]="false" [toggleMask]="true" autocomplete="new-password" />
+          <label for="cadastro-confirmar-senha">Confirmar senha</label>
+        </p-floatlabel>
+
+        @if (form.controls.confirmarSenha.touched && form.controls.confirmarSenha.invalid) {
+        <small>Confirme sua senha.</small>
+        }
+      </div>
+
+      <button pButton type="submit" label="Cadastrar" [loading]="carregando()" [disabled]="carregando()"></button>
+
+      <p-divider align="center">
+        <span class="divider-text">ou</span>
+      </p-divider>
+
+      <button pButton type="button" severity="secondary" class="google-button" [outlined]="true" [disabled]="carregando()" (click)="cadastrarComGoogle()">
+        <span class="google-icon" aria-hidden="true">G</span>
+        <span>Cadastrar com Google</span>
+      </button>
+
+      <div class="link-row">
+        <span>Já tem uma conta?</span>
+        <button type="button" (click)="irParaLogin()">Entrar</button>
+      </div>
+    </form>
+  </p-card>
+</main>
