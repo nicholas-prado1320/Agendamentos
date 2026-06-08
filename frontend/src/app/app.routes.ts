@@ -8,6 +8,23 @@ import { Login } from './features/login/login';
 export const routes: Routes = [
 
     { path: 'login', component: Login, },
+    {
+        path: 'cadastro',
+        loadComponent: () => import('./features/cadastro-usuario/cadastro-usuario').then(m => m.CadastroUsuario),
+    },
+    {
+        path: 'validar-email',
+        loadComponent: () => import('./features/validar-email/validar-email').then(m => m.ValidarEmail),
+    },
+    {
+        path: 'esqueci-senha',
+        loadComponent: () => import('./features/esqueci-senha/esqueci-senha').then(m => m.EsqueciSenha),
+    },
+    {
+        path: 'alterar-senha',
+        loadComponent: () => import('./features/redefinir-senha/redefinir-senha').then(m => m.RedefinirSenha),
+        canActivate: [authGuard],
+    },
 
     { path: 'home', component: HomeComponent, canActivate: [authGuard, horarioConfiguradoGuard] },
 
