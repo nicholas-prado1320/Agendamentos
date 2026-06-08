@@ -35,19 +35,21 @@
           <i class="pi pi-sparkles"></i>
           <span>Serviços</span>
         </button>
-        } 
-        @if (authService.isManicure()) {
+        } @if (authService.isManicure()) {
         <button type="button" class="drawer-item" [class.active]="rotaAtiva('clientes')" (click)="navegarPara('clientes')">
           <i class="pi pi-users"></i>
           <span>Clientes</span>
         </button>
-        } 
-        @if (authService.isManicure()) {
+        } @if (authService.isManicure()) {
         <button type="button" class="drawer-item" [class.active]="rotaAtiva('horarios')" (click)="navegarPara('horarios')">
           <i class="pi pi-clock"></i>
           <span>Horários</span>
         </button>
         }
+        <button type="button" class="drawer-item" [class.active]="rotaAtiva('alterar-senha')" (click)="navegarPara('alterar-senha')">
+          <i class="pi pi-lock"></i>
+          <span>Alterar senha</span>
+        </button>
       </nav>
     </div>
 

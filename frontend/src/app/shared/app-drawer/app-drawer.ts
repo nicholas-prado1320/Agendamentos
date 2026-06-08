@@ -12,7 +12,8 @@ type DrawerRoute =
   | 'servicos'
   | 'novo-cliente'
   | 'novo-servico'
-  | 'horarios';
+  | 'horarios'
+  | 'alterar-senha';
 
 @Component({
   selector: 'app-drawer',
@@ -39,6 +40,7 @@ export class AppDrawerComponent {
     'novo-cliente': '/novo-cliente',
     'novo-servico': '/novo-servico',
     horarios: '/horarios',
+    'alterar-senha': '/alterar-senha',
   };
 
   alterarVisibilidade(aberto: boolean): void {
