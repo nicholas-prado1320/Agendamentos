@@ -2,8 +2,10 @@ package com.nicholas.backend.domain.service;
 
 import com.nicholas.backend.domain.entity.Servico;
 import com.nicholas.backend.domain.repository.ServicoRepository;
+import com.nicholas.backend.domain.repository.AgendamentoRepository;
 import com.nicholas.backend.dto.request.ServicoRequest;
 import com.nicholas.backend.dto.response.ServicoResponse;
+import com.nicholas.backend.domain.entity.StatusAgendamento;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ public class ServicoService {
     private static final int INTERVALO_GRADE_MINUTOS = 15;
 
     private final ServicoRepository servicoRepository;
+    private final AgendamentoRepository agendamentoRepository;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     public List<ServicoResponse> listar() {
@@ -96,9 +99,26 @@ public class ServicoService {
 
         Servico servico = buscarEntidadePorId(id);
 
+        validarServicoSemAgendamentosAtivos(id);
+
         servico.setAtivo(false);
 
         return toResponse(servicoRepository.save(servico));
+    }
+
+    @Transactional
+    public void excluir(Long id) {
+        validarManicure();
+
+        Servico servico = buscarEntidadePorId(id);
+
+        if (Boolean.TRUE.equals(servico.getAtivo())) {
+            throw new RuntimeException("Para excluir um serviço, primeiro ele precisa estar inativo.");
+        }
+
+        validarServicoSemNenhumAgendamento(id);
+
+        servicoRepository.delete(servico);
     }
 
     public Servico buscarEntidadePorId(Long id) {
@@ -121,6 +141,28 @@ public class ServicoService {
 
         if (duracaoEmMinutos % INTERVALO_GRADE_MINUTOS != 0) {
             throw new RuntimeException("A duração do serviço deve ser múltipla de 15 minutos.");
+        }
+    }
+
+    private void validarServicoSemAgendamentosAtivos(Long servicoId) {
+        boolean possuiAgendamentosAtivos = agendamentoRepository.existsByServicoIdAndStatusIn(
+                servicoId,
+                List.of(
+                        StatusAgendamento.AGENDADO,
+                        StatusAgendamento.EM_ATENDIMENTO
+                )
+        );
+
+        if (possuiAgendamentosAtivos) {
+            throw new RuntimeException("Não é possível inativar este serviço, pois ele possui agendamentos em aberto.");
+        }
+    }
+
+    private void validarServicoSemNenhumAgendamento(Long servicoId) {
+        boolean possuiAgendamentos = agendamentoRepository.existsByServicoId(servicoId);
+
+        if (possuiAgendamentos) {
+            throw new RuntimeException("Não é possível excluir este serviço, pois ele possui histórico de agendamentos.");
         }
     }
 

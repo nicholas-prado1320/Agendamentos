@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public record ServicoResumoResponse(
         Long id,
         String nome,
-        BigDecimal preco
+        BigDecimal preco,
+        String duracao
 ) {
 }

@@ -51,4 +51,9 @@ public class ServicoController {
     public ServicoResponse inativar(@PathVariable Long id) {
         return servicoService.inativar(id);
     }
+
+    @DeleteMapping("/{id}")
+    public void excluir(@PathVariable Long id) {
+        servicoService.excluir(id);
+    }
 }
