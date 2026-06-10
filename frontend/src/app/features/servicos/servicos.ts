@@ -7,6 +7,8 @@ import { Servico } from '../../core/models/servicos.model';
 import { mapServicoResponseToModel } from '../../core/mappers/servico.mapper';
 import { DialogService } from '../../core/service/dialog.service';
 import { AuthService } from '../../core/service/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ApiErrorResponse } from '../../core/models/dtos/api-error.dto';
 
 type FiltroServico = 'ativos' | 'inativos' | 'todos';
 
@@ -92,8 +94,31 @@ export class Servicos {
             this.servicos.update((servicos) => servicos.map((item) => (item.id === id ? servico : item)));
             this.dialogService.success('O serviço foi inativado com sucesso.', 'Serviço inativado');
           },
-          error: () => {
-            this.dialogService.error('Não foi possível inativar o serviço.');
+          error: (error: HttpErrorResponse) => {
+            this.dialogService.error(this.extrairMensagemErro(error));
+          },
+        });
+      },
+    });
+  }
+
+  excluirServico(id: number): void {
+    this.dialogService.confirmDialog({
+      header: 'Excluir serviço',
+      message: 'Deseja excluir definitivamente este serviço? Essa ação não poderá ser desfeita.',
+      icon: 'pi pi-trash',
+      acceptLabel: 'Sim, excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.servicoService.excluir(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: () => {
+            this.servicos.update((servicos) => servicos.filter((servico) => servico.id !== id));
+            this.dialogService.success('Serviço excluído com sucesso.', 'Serviço excluído');
+          },
+          error: (error: HttpErrorResponse) => {
+            this.dialogService.error(this.extrairMensagemErro(error));
           },
         });
       },
@@ -107,8 +132,8 @@ export class Servicos {
         this.servicos.update((servicos) => servicos.map((item) => (item.id === id ? servico : item)));
         this.dialogService.success('O serviço foi ativado com sucesso.', 'Serviço ativado');
       },
-      error: () => {
-        this.dialogService.error('Não foi possível ativar o serviço.');
+      error: (error: HttpErrorResponse) => {
+        this.dialogService.error(this.extrairMensagemErro(error));
       },
     });
   }
@@ -132,5 +157,16 @@ export class Servicos {
         alert('Não foi possível carregar os serviços.');
       },
     });
+  }
+
+  private extrairMensagemErro(error: HttpErrorResponse): string {
+    const apiError = error.error as ApiErrorResponse | undefined;
+    if (apiError?.details?.length) {
+      return apiError.details.join('\n');
+    }
+    if (apiError?.message) {
+      return apiError.message;
+    }
+    return 'Não foi possível realizar esta ação.';
   }
 }

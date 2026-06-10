@@ -283,7 +283,7 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   align-content: center;
   gap: 0.5rem;
 
-  i {
+  > i {
     margin-bottom: 0.4rem;
     color: #eec5c6;
     font-size: 2.5rem;
@@ -324,6 +324,12 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
   &:active {
     transform: scale(0.96);
+  }
+
+  i {
+    margin: 0;
+    color: #fff;
+    font-size: 1rem;
   }
 }
 

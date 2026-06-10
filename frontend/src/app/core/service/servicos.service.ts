@@ -38,4 +38,8 @@ export class ServicoService {
   inativar(id: number): Observable<ServicoResponse> {
     return this.http.patch<ServicoResponse>(`${this.apiUrl}/${id}/inativar`, {});
   }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
