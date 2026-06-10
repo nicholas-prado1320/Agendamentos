@@ -27,14 +27,32 @@
       <div class="input-group">
         <label for="clienteId">Cliente *</label>
 
-        <p-select inputId="clienteId" formControlName="clienteId" [options]="clientes()" optionLabel="nomeCompleto" optionValue="id" placeholder="Selecione uma cliente" appendTo="body" class="prime-input-override" />
+        <p-select
+          inputId="clienteId"
+          formControlName="clienteId"
+          [options]="clientes()"
+          optionLabel="nomeCompleto"
+          optionValue="id"
+          placeholder="Selecione uma cliente"
+          appendTo="body"
+          class="prime-input-override"
+        />
       </div>
       }
 
       <div class="input-group">
         <label for="servicoId">Serviço *</label>
 
-        <p-select inputId="servicoId" formControlName="servicoId" [options]="servicos()" optionLabel="nome" optionValue="id" placeholder="Qual serviço será feito?" appendTo="body" class="prime-input-override" />
+        <p-select
+          inputId="servicoId"
+          formControlName="servicoId"
+          [options]="servicos()"
+          optionLabel="nome"
+          optionValue="id"
+          placeholder="Qual serviço será feito?"
+          appendTo="body"
+          class="prime-input-override"
+        />
       </div>
 
       <div class="input-group">
@@ -61,7 +79,7 @@
 
         @if (!temServicoEDataSelecionados()) {
         <small class="field-hint">Selecione o serviço e a data para ver os horários.</small>
-        } @if (temServicoEDataSelecionados() && horariosGrade().length === 0 && !carregandoHorarios()) {
+        } @if (temServicoEDataSelecionados() && horariosDisponiveisGrade().length === 0 && !carregandoHorarios()) {
         <small class="field-hint">Nenhum horário disponível para esta data e serviço.</small>
         } @if (horarioTemErro()) {
         <small class="field-error">Selecione um horário.</small>
@@ -112,9 +130,9 @@
       <i class="pi pi-spin pi-spinner"></i>
       <p>Carregando horários...</p>
     </div>
-    } @else if (horariosGrade().length > 0) {
+    } @else if (horariosDisponiveisGrade().length > 0) {
     <div class="schedule-grid">
-      @for (horario of horariosGrade(); track horario.hora) {
+      @for (horario of horariosDisponiveisGrade(); track horario.hora) {
       <button
         type="button"
         class="schedule-time-card"
@@ -126,7 +144,7 @@
       >
         <strong>{{ horario.hora }}</strong>
 
-        <span> @if (horario.selecionado) { Selecionado } @else if (horario.disponivel) { Livre } @else { Ocupado } </span>
+        <span> @if (horario.selecionado) { Selecionado } @else { Livre } </span>
       </button>
       }
     </div>

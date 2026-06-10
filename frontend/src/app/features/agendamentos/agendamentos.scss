@@ -109,6 +109,44 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   }
 }
 
+.advanced-filters {
+  margin-bottom: 1.25rem;
+}
+
+.filter-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  strong {
+    color: $color-brown-dark;
+    font-size: 1rem;
+    font-weight: 900;
+  }
+}
+
+.filters-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: 0.85rem;
+  padding-top: 0.25rem;
+}
+
+.filter-field {
+  width: 100%;
+
+  &.filter-field-full {
+    grid-column: 1 / -1;
+  }
+}
+
+.advanced-filter-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
 .appointments-list {
   display: grid;
   gap: clamp(1rem, 2vw, 1.35rem);
@@ -121,6 +159,63 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   border-radius: 1.35rem;
   background: rgba(255, 255, 255, 0.84);
   box-shadow: 0 14px 30px rgba(166, 110, 82, 0.11);
+}
+
+.appointment-card.compact {
+  padding: 0.85rem;
+
+  .appointment-header {
+    margin-bottom: 0.65rem;
+  }
+
+  .appointment-time {
+    strong {
+      font-size: 1.05rem;
+    }
+
+    span {
+      font-size: 0.7rem;
+    }
+  }
+
+  .appointment-body {
+    grid-template-columns: 2.8rem minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .client-avatar {
+    width: 2.8rem;
+    height: 2.8rem;
+    font-size: 0.82rem;
+  }
+
+  .appointment-info {
+    gap: 0.2rem;
+
+    strong {
+      font-size: 0.92rem;
+    }
+  }
+
+  .service-name {
+    font-size: 0.82rem;
+  }
+
+  .service-price {
+    font-size: 0.75rem;
+    padding: 0.22rem 0.48rem;
+  }
+
+  .appointment-actions {
+    margin-top: 0.7rem;
+  }
+
+  .action-button {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 0.75rem;
+    font-size: 0.88rem;
+  }
 }
 
 .appointment-header {
@@ -183,6 +278,11 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   &.in-progress {
     color: #0369a1;
     background: #e0f2fe;
+  }
+
+  &.no-show {
+    color: #92400e;
+    background: #fef3c7;
   }
 
   &.deleted {
@@ -293,6 +393,11 @@ $page-padding: clamp(1rem, 5vw, 18rem);
     color: #0369a1;
     background: #e0f2fe;
   }
+
+  &.no-show {
+    color: #92400e;
+    background: #fef3c7;
+  }
 }
 
 .empty-state {
@@ -351,6 +456,12 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   }
 }
 
+.paginator-section {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
 .floating-button {
   position: fixed;
   right: clamp(1.25rem, 5vw, 4rem);
@@ -374,6 +485,96 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
   i {
     font-size: clamp(1.7rem, 4vw, 2rem);
+  }
+}
+
+:host ::ng-deep {
+  .advanced-filters {
+    .p-accordionpanel {
+      border: 1px solid rgba(196, 126, 93, 0.14);
+      border-radius: 1.25rem;
+      overflow: visible;
+      background: rgba(255, 255, 255, 0.76);
+      box-shadow: 0 12px 26px rgba(166, 110, 82, 0.08);
+    }
+
+    .p-accordionheader {
+      padding: 0.9rem 1rem;
+      color: $color-brown;
+      background: rgba(255, 255, 255, 0.68);
+      border: 0;
+    }
+
+    .p-accordioncontent,
+    .p-accordioncontent-content {
+      overflow: visible;
+    }
+
+    .p-accordioncontent-content {
+      padding: 0.95rem;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .p-inputtext,
+    .p-select,
+    .p-datepicker,
+    .p-inputnumber,
+    .p-inputnumber-input {
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .p-inputtext,
+    .p-select,
+    .p-datepicker-input,
+    .p-inputnumber-input {
+      min-height: 3.05rem;
+      border-color: rgba(196, 126, 93, 0.18);
+      border-radius: 1rem;
+      color: $color-brown-dark;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .p-select-label {
+      font-weight: 800;
+    }
+
+    .p-floatlabel label {
+      color: #a88173;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .p-button {
+      min-height: 2.65rem;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+  }
+
+  .p-paginator {
+    border: 1px solid rgba(196, 126, 93, 0.14);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: 0 12px 24px rgba(166, 110, 82, 0.08);
+  }
+
+  .p-paginator-page,
+  .p-paginator-next,
+  .p-paginator-prev,
+  .p-paginator-first,
+  .p-paginator-last {
+    color: $color-copper-dark;
+    border-radius: 0.8rem;
+  }
+
+  .p-paginator-page.p-highlight {
+    color: #fff;
+    background: linear-gradient(135deg, $color-primary, $color-primary-dark);
   }
 }
 
@@ -402,6 +603,15 @@ $page-padding: clamp(1rem, 5vw, 18rem);
     font-size: 0.84rem;
   }
 
+  .filters-content {
+    grid-template-columns: 1fr;
+  }
+
+  .advanced-filter-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
   .appointment-card {
     padding: 0.9rem;
   }
@@ -418,6 +628,17 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   .status-pill {
     max-width: 8rem;
     font-size: 0.68rem;
+  }
+
+  .appointment-card.compact {
+    .appointment-body {
+      grid-template-columns: 2.65rem minmax(0, 1fr);
+    }
+
+    .client-avatar {
+      width: 2.65rem;
+      height: 2.65rem;
+    }
   }
 }
 

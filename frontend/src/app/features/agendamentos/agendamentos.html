@@ -17,9 +17,92 @@
     }
   </section>
 
+  <section class="advanced-filters" aria-label="Filtros avançados">
+    <p-accordion value="0">
+      <p-accordion-panel value="0">
+        <p-accordion-header>
+          <div class="filter-header">
+            <strong>Filtros</strong>
+          </div>
+        </p-accordion-header>
+
+        <p-accordion-content>
+          <div class="filters-content">
+            <p-floatlabel variant="on" class="filter-field filter-field-full">
+              <input pInputText id="busca" type="text" [ngModel]="busca()" (ngModelChange)="busca.set($event)" (keyup.enter)="buscarAgendamentos()" />
+              <label for="busca">Buscar cliente ou serviço</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on" class="filter-field">
+              <p-select inputId="status" [options]="statusOptions" optionLabel="label" optionValue="value" appendTo="body" [ngModel]="statusFiltro()" (ngModelChange)="alterarStatusFiltro($event)" />
+              <label for="status">Status</label>
+            </p-floatlabel>
+
+            @if (authService.isManicure()) {
+            <p-floatlabel variant="on" class="filter-field">
+              <p-select
+                inputId="cliente"
+                [options]="clientesFiltro()"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [filter]="true"
+                [showClear]="true"
+                [ngModel]="clienteIdFiltro()"
+                (ngModelChange)="alterarClienteFiltro($event)"
+              />
+              <label for="cliente">Cliente</label>
+            </p-floatlabel>
+            }
+
+            <p-floatlabel variant="on" class="filter-field">
+              <p-select
+                inputId="servico"
+                [options]="servicosFiltro()"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [filter]="true"
+                [showClear]="true"
+                [ngModel]="servicoIdFiltro()"
+                (ngModelChange)="alterarServicoFiltro($event)"
+              />
+              <label for="servico">Serviço</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on" class="filter-field">
+              <p-datepicker inputId="dataInicio" dateFormat="dd/mm/yy" appendTo="body" [showIcon]="true" [ngModel]="dataInicioFiltro()" (ngModelChange)="alterarDataInicio($event)" />
+              <label for="dataInicio">Data inicial</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on" class="filter-field">
+              <p-datepicker inputId="dataFim" dateFormat="dd/mm/yy" appendTo="body" [showIcon]="true" [ngModel]="dataFimFiltro()" (ngModelChange)="alterarDataFim($event)" />
+              <label for="dataFim">Data final</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on" class="filter-field">
+              <p-inputnumber inputId="valorMinimo" mode="currency" currency="BRL" locale="pt-BR" [min]="0" [ngModel]="valorMinimoFiltro()" (ngModelChange)="alterarValorMinimo($event)" />
+              <label for="valorMinimo">Valor mín.</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on" class="filter-field">
+              <p-inputnumber inputId="valorMaximo" mode="currency" currency="BRL" locale="pt-BR" [min]="0" [ngModel]="valorMaximoFiltro()" (ngModelChange)="alterarValorMaximo($event)" />
+              <label for="valorMaximo">Valor máx.</label>
+            </p-floatlabel>
+
+            <div class="advanced-filter-actions">
+              <button pButton type="button" severity="secondary" label="Limpar" icon="pi pi-times" (click)="limparFiltrosAvancados()"></button>
+              <button pButton type="button" label="Buscar" icon="pi pi-search" (click)="buscarAgendamentos()"></button>
+            </div>
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    </p-accordion>
+  </section>
+
   <section class="appointments-list">
     @for (agendamento of agendamentosFiltrados(); track agendamento.id) {
-    <article class="appointment-card">
+    <article class="appointment-card" [class.compact]="modoCompacto()">
       <div class="appointment-header">
         <div class="appointment-time">
           <i class="pi pi-clock"></i>
@@ -30,7 +113,7 @@
           </div>
         </div>
 
-        <span class="status-pill"> {{ formatarStatus(agendamento.status) }} </span>
+        <span [class]="obterClasseStatus(agendamento.status)"> {{ formatarStatus(agendamento.status) }} </span>
       </div>
 
       <div class="appointment-body">
@@ -49,13 +132,17 @@
       </div>
 
       <div class="appointment-actions">
-        @if (podeIniciar(agendamento.status)) {
+        @if (podeIniciar(agendamento)) {
         <button type="button" class="action-button info" aria-label="Iniciar atendimento" (click)="iniciarAgendamento(agendamento.id)">
           <i class="pi pi-play"></i>
         </button>
-        } @if (podeConcluir(agendamento.status)) {
+        } @if (podeConcluir(agendamento)) {
         <button type="button" class="action-button success" aria-label="Concluir atendimento" (click)="concluirAgendamento(agendamento.id)">
           <i class="pi pi-check-circle"></i>
+        </button>
+        } @if (podeMarcarNaoCompareceu(agendamento)) {
+        <button type="button" class="action-button no-show" aria-label="Cliente não compareceu" (click)="marcarNaoCompareceu(agendamento.id)">
+          <i class="pi pi-user-minus"></i>
         </button>
         } @if (podeCancelar(agendamento.status)) {
         <button type="button" class="action-button warning" aria-label="Cancelar agendamento" (click)="cancelarAgendamento(agendamento.id)">
@@ -78,6 +165,12 @@
       } @else if (filtroSelecionado() === 'semana') {
       <p>Nenhum agendamento nesta semana.</p>
       <span>Os atendimentos da semana aparecerão aqui.</span>
+      } @else if (filtroSelecionado() === 'pendencias') {
+      <p>Nenhuma pendência encontrada.</p>
+      <span>Todos os atendimentos vencidos foram revisados.</span>
+      } @else if (filtroSelecionado() === 'historico') {
+      <p>Nenhum histórico encontrado.</p>
+      <span>Atendimentos concluídos, cancelados e não comparecidos aparecerão aqui.</span>
       } @else {
       <p>Sua agenda está livre.</p>
       <span>Nenhum agendamento encontrado.</span>
@@ -90,6 +183,12 @@
     </div>
     }
   </section>
+
+  @if (totalRegistros() > 0) {
+  <section class="paginator-section">
+    <p-paginator [first]="primeiroRegistro()" [rows]="tamanhoPagina()" [totalRecords]="totalRegistros()" [rowsPerPageOptions]="[5, 8, 10, 15]" (onPageChange)="onPageChange($event)" />
+  </section>
+  }
 
   <button type="button" class="floating-button" aria-label="Novo agendamento" (click)="novoAgendamento()">
     <i class="pi pi-plus"></i>

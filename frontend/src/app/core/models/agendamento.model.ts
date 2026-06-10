@@ -11,6 +11,7 @@ export interface ServicoAgendamento {
   id: number;
   nome: string;
   preco: number;
+  duracao?: string;
 }
 
 export interface Agendamento {

@@ -15,6 +15,7 @@ export function mapAgendamentoResponseToModel(response: AgendamentoResponse): Ag
       id: response.servico.id,
       nome: response.servico.nome,
       preco: response.servico.preco,
+      duracao: response.servico.duracao,
     },
     data: response.data,
     hora: response.hora.slice(0, 5),

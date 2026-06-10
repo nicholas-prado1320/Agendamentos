@@ -1,4 +1,4 @@
-export type StatusAgendamento = 'AGENDADO' | 'EM_ATENDIMENTO' | 'CONCLUIDO' | 'CANCELADO' | 'EXCLUIDO';
+export type StatusAgendamento = 'AGENDADO' | 'EM_ATENDIMENTO' | 'CONCLUIDO' | 'CANCELADO' | 'NAO_COMPARECEU' | 'EXCLUIDO';
 
 export interface AgendamentoRequest {
   clienteId: number;
@@ -28,4 +28,19 @@ export interface AgendamentoResponse {
 export interface HorarioDisponivelResponse {
   hora: string;
   disponivel: boolean;
+}
+
+export interface AgendamentoFiltroParams {
+  tipo?: 'HOJE' | 'SEMANA' | 'TODOS' | 'HISTORICO' | 'PENDENCIAS';
+  status?: StatusAgendamento;
+  todosStatus?: boolean;
+  clienteId?: number;
+  servicoId?: number;
+  dataInicio?: string;
+  dataFim?: string;
+  valorMinimo?: number;
+  valorMaximo?: number;
+  busca?: string;
+  page: number;
+  size: number;
 }

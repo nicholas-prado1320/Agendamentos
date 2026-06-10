@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -45,6 +45,10 @@ export class NovoAgendamento {
   public readonly clientes = signal<Cliente[]>([]);
   public readonly servicos = signal<Servico[]>([]);
   public readonly horariosGrade = signal<HorarioGrade[]>([]);
+  
+  public readonly horariosDisponiveisGrade = computed(() =>
+    this.horariosGrade().filter((horario) => horario.disponivel)
+  );
 
   public readonly carregando = signal(false);
   public readonly carregandoHorarios = signal(false);
