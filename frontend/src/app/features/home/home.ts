@@ -21,14 +21,16 @@ export class HomeComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly agendamentoService = inject(AgendamentoService);
-  private readonly authService = inject(AuthService);
   private readonly dialogService = inject(DialogService);
 
   private readonly relogio = signal(new Date());
 
+  public readonly authService = inject(AuthService);
+
   public readonly agendamentosHoje = signal<Agendamento[]>([]);
   public readonly carregando = signal(false);
   public readonly processandoAgendamentoId = signal<number | null>(null);
+  public readonly quantidadePendencias = signal(0);
 
   public menuAberto = false;
 
@@ -38,6 +40,7 @@ export class HomeComponent {
 
   constructor() {
     this.carregarAgendamentosHoje();
+    this.carregarPendencias();
 
     const intervaloRelogio = window.setInterval(() => {
       this.relogio.set(new Date());
@@ -60,6 +63,14 @@ export class HomeComponent {
     this.router.navigate(['/agendamentos']);
   }
 
+  verPendencias(): void {
+    this.router.navigate(['/agendamentos'], {
+      queryParams: {
+        filtro: 'pendencias',
+      },
+    });
+  }
+
   podeIniciar(agendamento: Agendamento): boolean {
     if (!this.authService.isManicure()) {
       return false;
@@ -69,10 +80,7 @@ export class HomeComponent {
       return false;
     }
 
-    const agora = this.relogio();
-    const horarioAgendamento = this.converterHoraParaDataHoje(agendamento.hora);
-
-    return horarioAgendamento.getTime() <= agora.getTime();
+    return this.agendamentoJaPodeIniciar(agendamento) && !this.agendamentoPassouDoFimPrevisto(agendamento);
   }
 
   podeConcluir(agendamento: Agendamento): boolean {
@@ -80,7 +88,8 @@ export class HomeComponent {
       return false;
     }
 
-    return agendamento.status === 'EM_ATENDIMENTO';
+    return agendamento.status === 'EM_ATENDIMENTO'
+      || (agendamento.status === 'AGENDADO' && this.agendamentoPassouDoFimPrevisto(agendamento));
   }
 
   iniciarAtendimento(agendamento: Agendamento): void {
@@ -98,6 +107,7 @@ export class HomeComponent {
           this.processandoAgendamentoId.set(null);
           this.dialogService.success('Atendimento iniciado com sucesso!');
           this.carregarAgendamentosHoje();
+          this.carregarPendencias();
         },
         error: (error: HttpErrorResponse) => {
           this.processandoAgendamentoId.set(null);
@@ -121,6 +131,7 @@ export class HomeComponent {
           this.processandoAgendamentoId.set(null);
           this.dialogService.success('Atendimento concluído com sucesso!');
           this.carregarAgendamentosHoje();
+          this.carregarPendencias();
         },
         error: (error: HttpErrorResponse) => {
           this.processandoAgendamentoId.set(null);
@@ -148,6 +159,54 @@ export class HomeComponent {
     }).format(valor);
   }
 
+  private agendamentoJaPodeIniciar(agendamento: Agendamento): boolean {
+    const inicio = new Date(`${agendamento.data}T${agendamento.hora}`);
+    return this.relogio().getTime() >= inicio.getTime();
+  }
+
+  private agendamentoPassouDoFimPrevisto(agendamento: Agendamento): boolean {
+    const duracao = agendamento.servico.duracao;
+    if (!duracao) {
+      return false;
+    }
+    const inicio = new Date(`${agendamento.data}T${agendamento.hora}`);
+    const fim = new Date(inicio.getTime() + this.converterDuracaoParaMinutos(duracao) * 60_000);
+    return this.relogio().getTime() > fim.getTime();
+  }
+
+  private converterDuracaoParaMinutos(duracao: string): number {
+    const valor = duracao.toLowerCase().trim();
+    if (valor.includes('h')) {
+      const partesHora = valor.split('h');
+      const horasTexto = partesHora[0].replace(/\D/g, '');
+      const minutosTexto = partesHora[1]?.replace(/\D/g, '') ?? '';
+      const horas = horasTexto ? Number(horasTexto) : 0;
+      const minutos = minutosTexto ? Number(minutosTexto) : 0;
+      return horas * 60 + minutos;
+    }
+    const minutosTexto = valor.replace(/\D/g, '');
+    return minutosTexto ? Number(minutosTexto) : 0;
+  }
+
+  private carregarPendencias(): void {
+    if (!this.authService.isManicure()) {
+      this.quantidadePendencias.set(0);
+      return;
+    }
+
+    this.agendamentoService
+      .listarPendencias()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (pendencias) => {
+          this.quantidadePendencias.set(pendencias.length);
+        },
+        error: () => {
+          this.quantidadePendencias.set(0);
+        },
+      });
+  }
+
   private carregarAgendamentosHoje(): void {
     this.carregando.set(true);
 
@@ -168,15 +227,6 @@ export class HomeComponent {
           this.dialogService.error('Não foi possível carregar os agendamentos de hoje.');
         },
       });
-  }
-
-  private converterHoraParaDataHoje(hora: string): Date {
-    const [horas, minutos] = hora.slice(0, 5).split(':').map(Number);
-
-    const data = new Date();
-    data.setHours(horas, minutos, 0, 0);
-
-    return data;
   }
 
   private obterSaudacao(): string {

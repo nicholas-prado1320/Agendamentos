@@ -119,6 +119,64 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   text-transform: uppercase;
 }
 
+.pending-alert {
+  margin-bottom: 1.5rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 1.25rem;
+  background: #fff7ed;
+  box-shadow: 0 14px 28px rgba(166, 110, 82, 0.08);
+  display: grid;
+  grid-template-columns: 2.65rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pending-alert-icon {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 50%;
+  color: #92400e;
+  background: #fef3c7;
+  display: grid;
+  place-items: center;
+
+  i {
+    font-size: 1.05rem;
+  }
+}
+
+.pending-alert-content {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+
+  strong {
+    color: #7c2d12;
+    font-size: 0.92rem;
+    line-height: 1.25;
+  }
+
+  span {
+    color: #9a5b2f;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+}
+
+.pending-alert-button {
+  min-height: 2.35rem;
+  padding: 0 0.85rem;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: #f59e0b;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .appointments-section {
   width: 100%;
 }
@@ -427,6 +485,15 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   .status-pill {
     max-width: 8rem;
     font-size: 0.68rem;
+  }
+
+  .pending-alert {
+    grid-template-columns: 2.45rem minmax(0, 1fr);
+  }
+
+  .pending-alert-button {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 }
 

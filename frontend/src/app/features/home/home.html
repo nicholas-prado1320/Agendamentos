@@ -26,6 +26,21 @@
     <p>{{ dataAtual }}</p>
   </section>
 
+  @if (authService.isManicure() && quantidadePendencias() > 0) {
+  <section class="pending-alert">
+    <div class="pending-alert-icon">
+      <i class="pi pi-exclamation-triangle"></i>
+    </div>
+
+    <div class="pending-alert-content">
+      <strong>{{ quantidadePendencias() }} atendimento(s) pendente(s) de revisão</strong>
+      <span>Existem atendimentos vencidos que ainda precisam ser concluídos ou marcados como não comparecimento.</span>
+    </div>
+
+    <button type="button" class="pending-alert-button" (click)="verPendencias()">Revisar</button>
+  </section>
+  }
+
   <section class="appointments-section">
     <div class="section-header">
       <h2>Agenda de hoje</h2>
