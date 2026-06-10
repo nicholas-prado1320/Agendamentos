@@ -226,3 +226,37 @@
     min-width: 1.55rem;
   }
 }
+
+.p-datepicker-panel,
+.p-select-overlay {
+  z-index: 1200 !important;
+}
+
+.p-datepicker-panel {
+  max-width: calc(100vw - 1.5rem);
+}
+
+@media (max-width: 480px) {
+  .p-datepicker-panel {
+    width: min(20rem, calc(100vw - 1.5rem)) !important;
+  }
+
+  .p-datepicker-calendar {
+    width: 100%;
+  }
+
+  .p-datepicker-calendar td,
+  .p-datepicker-calendar th {
+    padding: 0.15rem;
+  }
+
+  .p-datepicker-day {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.82rem;
+  }
+
+  .p-datepicker-header {
+    padding: 0.55rem 0.65rem;
+  }
+}
