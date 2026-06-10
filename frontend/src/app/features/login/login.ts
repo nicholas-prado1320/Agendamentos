@@ -133,7 +133,7 @@ export class Login implements AfterViewInit {
         next: (response) => {
           this.carregandoGoogle.set(false);
           this.modalWhatsappGoogle.set(false);
-          this.dialogService.success('Conta criada com Google com sucesso.');
+          this.dialogService.success('Conta criada com sucesso.');
 
           if (response.role === 'MANICURE') {
             this.verificarHorarioManicure();
