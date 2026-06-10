@@ -165,12 +165,35 @@ public class ClienteService {
     }
 
     private ClienteResponse toResponse(Cliente cliente) {
+        Long clienteId = cliente.getId();
+
+        Long totalAgendamentos = agendamentoRepository.countByClienteId(clienteId);
+
+        Long totalConcluidos = agendamentoRepository.countByClienteIdAndStatus(
+                clienteId,
+                StatusAgendamento.CONCLUIDO
+        );
+
+        Long totalCancelados = agendamentoRepository.countByClienteIdAndStatus(
+                clienteId,
+                StatusAgendamento.CANCELADO
+        );
+
+        Long totalNaoCompareceu = agendamentoRepository.countByClienteIdAndStatus(
+                clienteId,
+                StatusAgendamento.NAO_COMPARECEU
+        );
+
         return new ClienteResponse(
                 cliente.getId(),
                 cliente.getNomeCompleto(),
                 cliente.getApelido(),
                 cliente.getWhatsapp(),
-                cliente.getAtivo()
+                cliente.getAtivo(),
+                totalAgendamentos,
+                totalConcluidos,
+                totalCancelados,
+                totalNaoCompareceu
         );
     }
 }

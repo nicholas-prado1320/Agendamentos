@@ -5,6 +5,10 @@ public record ClienteResponse(
         String nomeCompleto,
         String apelido,
         String whatsapp,
-        Boolean ativo
+        Boolean ativo,
+        Long totalAgendamentos,
+        Long totalConcluidos,
+        Long totalCancelados,
+        Long totalNaoCompareceu
 ) {
 }
