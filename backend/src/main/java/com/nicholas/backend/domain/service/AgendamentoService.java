@@ -10,21 +10,31 @@ import com.nicholas.backend.dto.request.AgendamentoRequest;
 import com.nicholas.backend.dto.response.AgendamentoResponse;
 import com.nicholas.backend.dto.response.ClienteResumoResponse;
 import com.nicholas.backend.dto.response.HorarioDisponivelResponse;
+import com.nicholas.backend.dto.response.PageResponse;
 import com.nicholas.backend.dto.response.ServicoResumoResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
 public class AgendamentoService {
 
     private static final int INTERVALO_GRADE_MINUTOS = 15;
+    private static final ZoneId ZONE_ID = ZoneId.of("America/Sao_Paulo");
 
     private static final List<StatusAgendamento> STATUS_ATIVOS = List.of(
             StatusAgendamento.AGENDADO,
@@ -34,6 +44,7 @@ public class AgendamentoService {
     private static final List<StatusAgendamento> STATUS_HISTORICO = List.of(
             StatusAgendamento.CONCLUIDO,
             StatusAgendamento.CANCELADO,
+            StatusAgendamento.NAO_COMPARECEU,
             StatusAgendamento.EXCLUIDO
     );
 
@@ -42,6 +53,18 @@ public class AgendamentoService {
     private final ClienteService clienteService;
     private final ServicoService servicoService;
     private final HorarioAtendimentoService horarioAtendimentoService;
+
+    private LocalDate dataAtual() {
+        return LocalDate.now(ZONE_ID);
+    }
+
+    private LocalTime horaAtual() {
+        return LocalTime.now(ZONE_ID);
+    }
+
+    private LocalDateTime dataHoraAtual() {
+        return LocalDateTime.now(ZONE_ID);
+    }
 
     public List<AgendamentoResponse> listar() {
         if (usuarioAutenticadoService.isCliente()) {
@@ -66,7 +89,7 @@ public class AgendamentoService {
     }
 
     public List<AgendamentoResponse> listarHoje() {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = dataAtual();
 
         if (usuarioAutenticadoService.isCliente()) {
             Long clienteId = usuarioAutenticadoService.getClienteId();
@@ -90,7 +113,7 @@ public class AgendamentoService {
     }
 
     public List<AgendamentoResponse> listarSemana() {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = dataAtual();
         LocalDate inicioSemana = hoje.with(DayOfWeek.MONDAY);
         LocalDate fimSemana = hoje.with(DayOfWeek.SUNDAY);
 
@@ -153,7 +176,7 @@ public class AgendamentoService {
             throw new RuntimeException("O serviço selecionado está inativo.");
         }
 
-        if (data.isBefore(LocalDate.now())) {
+        if (data.isBefore(dataAtual())) {
             throw new RuntimeException("Não é possível listar horários para uma data passada.");
         }
 
@@ -194,6 +217,81 @@ public class AgendamentoService {
         }
 
         return horarios;
+    }
+
+    public List<AgendamentoResponse> listarPendencias() {
+        if (usuarioAutenticadoService.isCliente()) {
+            throw new RuntimeException("Cliente não pode consultar pendências da agenda.");
+        }
+
+        return agendamentoRepository
+                .findByStatusInOrderByDataDescHoraDesc(STATUS_ATIVOS)
+                .stream()
+                .filter(this::passouDoFimPrevisto)
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public PageResponse<AgendamentoResponse> filtrar(
+            String tipo,
+            StatusAgendamento status,
+            boolean todosStatus,
+            Long clienteId,
+            Long servicoId,
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            BigDecimal valorMinimo,
+            BigDecimal valorMaximo,
+            String busca,
+            int page,
+            int size
+    ) {
+        int pagina = Math.max(page, 0);
+        int tamanho = Math.min(Math.max(size, 1), 50);
+
+        String tipoFiltro = tipo == null || tipo.isBlank()
+                ? "TODOS"
+                : tipo.trim().toUpperCase(Locale.ROOT);
+
+        Long clienteIdFiltro = clienteId;
+
+        if (usuarioAutenticadoService.isCliente()) {
+            Long clienteLogadoId = usuarioAutenticadoService.getClienteId();
+
+            if (clienteLogadoId == null) {
+                throw new RuntimeException("Usuário cliente não possui cadastro de cliente vinculado.");
+            }
+
+            clienteIdFiltro = clienteLogadoId;
+        }
+
+        Long clienteIdFinal = clienteIdFiltro;
+
+        Specification<Agendamento> specification = montarSpecificationFiltro(
+                tipoFiltro,
+                status,
+                todosStatus,
+                clienteIdFinal,
+                servicoId,
+                dataInicio,
+                dataFim,
+                valorMinimo,
+                valorMaximo,
+                busca
+        );
+
+        PageRequest pageRequest = PageRequest.of(
+                pagina,
+                tamanho,
+                Sort.by(Sort.Direction.DESC, "data")
+                        .and(Sort.by(Sort.Direction.DESC, "hora"))
+        );
+
+        return PageResponse.from(
+                agendamentoRepository
+                        .findAll(specification, pageRequest)
+                        .map(this::toResponse)
+        );
     }
 
     @Transactional
@@ -264,8 +362,8 @@ public class AgendamentoService {
             throw new RuntimeException("Somente agendamentos agendados podem ser iniciados.");
         }
 
-        LocalDate hoje = LocalDate.now();
-        LocalTime agora = LocalTime.now();
+        LocalDate hoje = dataAtual();
+        LocalTime agora = horaAtual();
 
         if (!agendamento.getData().isEqual(hoje)) {
             throw new RuntimeException("Este atendimento só pode ser iniciado na data agendada.");
@@ -273,6 +371,10 @@ public class AgendamentoService {
 
         if (agendamento.getHora().isAfter(agora)) {
             throw new RuntimeException("Este atendimento ainda não pode ser iniciado antes do horário agendado.");
+        }
+
+        if (passouDoFimPrevisto(agendamento)) {
+            throw new RuntimeException("Este atendimento já passou do horário previsto de conclusão. Marque como concluído ou como não compareceu.");
         }
 
         agendamento.setStatus(StatusAgendamento.EM_ATENDIMENTO);
@@ -288,11 +390,46 @@ public class AgendamentoService {
 
         Agendamento agendamento = buscarEntidadePorId(id);
 
-        if (agendamento.getStatus() != StatusAgendamento.EM_ATENDIMENTO) {
-            throw new RuntimeException("O atendimento precisa ser iniciado antes de ser concluído.");
+        if (agendamento.getStatus() == StatusAgendamento.CONCLUIDO) {
+            throw new RuntimeException("Este agendamento já foi concluído.");
+        }
+
+        if (agendamento.getStatus() == StatusAgendamento.CANCELADO
+                || agendamento.getStatus() == StatusAgendamento.EXCLUIDO
+                || agendamento.getStatus() == StatusAgendamento.NAO_COMPARECEU) {
+            throw new RuntimeException("Este agendamento não pode ser concluído.");
+        }
+
+        boolean podeConcluir =
+                agendamento.getStatus() == StatusAgendamento.EM_ATENDIMENTO
+                        || (agendamento.getStatus() == StatusAgendamento.AGENDADO && passouDoFimPrevisto(agendamento));
+
+        if (!podeConcluir) {
+            throw new RuntimeException("Este atendimento ainda não pode ser concluído.");
         }
 
         agendamento.setStatus(StatusAgendamento.CONCLUIDO);
+
+        return toResponse(agendamentoRepository.save(agendamento));
+    }
+
+    @Transactional
+    public AgendamentoResponse marcarClienteNaoCompareceu(Long id) {
+        if (usuarioAutenticadoService.isCliente()) {
+            throw new RuntimeException("Cliente não pode marcar não comparecimento.");
+        }
+
+        Agendamento agendamento = buscarEntidadePorId(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO) {
+            throw new RuntimeException("Somente agendamentos em aberto podem ser marcados como não compareceu.");
+        }
+
+        if (!passouDoFimPrevisto(agendamento)) {
+            throw new RuntimeException("Este agendamento ainda não pode ser marcado como não compareceu.");
+        }
+
+        agendamento.setStatus(StatusAgendamento.NAO_COMPARECEU);
 
         return toResponse(agendamentoRepository.save(agendamento));
     }
@@ -335,6 +472,122 @@ public class AgendamentoService {
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado."));
     }
 
+    private Specification<Agendamento> montarSpecificationFiltro(
+            String tipo,
+            StatusAgendamento status,
+            boolean todosStatus,
+            Long clienteId,
+            Long servicoId,
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            BigDecimal valorMinimo,
+            BigDecimal valorMaximo,
+            String busca
+    ) {
+        return (root, query, criteriaBuilder) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            if (query != null) {
+                query.distinct(true);
+            }
+
+            if (clienteId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("cliente").get("id"), clienteId));
+            }
+
+            if (servicoId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("servico").get("id"), servicoId));
+            }
+
+            if (dataInicio != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("data"), dataInicio));
+            }
+
+            if (dataFim != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("data"), dataFim));
+            }
+
+            if (valorMinimo != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("servico").get("preco"), valorMinimo));
+            }
+
+            if (valorMaximo != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("servico").get("preco"), valorMaximo));
+            }
+
+            aplicarFiltroStatusOuTipo(
+                    tipo,
+                    status,
+                    todosStatus,
+                    root,
+                    criteriaBuilder,
+                    predicates
+            );
+
+            if (busca != null && !busca.isBlank()) {
+                String termo = "%" + busca.trim().toLowerCase(Locale.ROOT) + "%";
+
+                var clienteJoin = root.join("cliente");
+                var servicoJoin = root.join("servico");
+
+                predicates.add(
+                        criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(clienteJoin.get("nomeCompleto")), termo),
+                                criteriaBuilder.like(criteriaBuilder.lower(clienteJoin.get("apelido")), termo),
+                                criteriaBuilder.like(criteriaBuilder.lower(servicoJoin.get("nome")), termo)
+                        )
+                );
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+    }
+
+    private void aplicarFiltroStatusOuTipo(
+            String tipo,
+            StatusAgendamento status,
+            boolean todosStatus,
+            jakarta.persistence.criteria.Root<Agendamento> root,
+            jakarta.persistence.criteria.CriteriaBuilder criteriaBuilder,
+            List<jakarta.persistence.criteria.Predicate> predicates
+    ) {
+        if (status != null) {
+            predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            return;
+        }
+
+        if (todosStatus) {
+            return;
+        }
+
+        switch (tipo) {
+            case "HOJE" -> {
+                predicates.add(criteriaBuilder.equal(root.get("data"), dataAtual()));
+                predicates.add(root.get("status").in(STATUS_ATIVOS));
+            }
+
+            case "SEMANA" -> {
+                LocalDate hoje = dataAtual();
+                LocalDate inicioSemana = hoje.with(DayOfWeek.MONDAY);
+                LocalDate fimSemana = hoje.with(DayOfWeek.SUNDAY);
+
+                predicates.add(criteriaBuilder.between(root.get("data"), inicioSemana, fimSemana));
+                predicates.add(root.get("status").in(STATUS_ATIVOS));
+            }
+
+            case "HISTORICO" -> predicates.add(root.get("status").in(STATUS_HISTORICO));
+
+            case "PENDENCIAS" -> predicates.add(root.get("status").in(STATUS_ATIVOS));
+
+            case "TODOS" -> {
+                // Não aplica filtro de status.
+                // Retorna todos os status.
+            }
+
+            default -> predicates.add(root.get("status").in(STATUS_ATIVOS));
+        }
+    }
+
     private void validarPermissaoSobreAgendamento(Agendamento agendamento) {
         if (!usuarioAutenticadoService.isCliente()) {
             return;
@@ -360,7 +613,7 @@ public class AgendamentoService {
             return false;
         }
 
-        if (data.isEqual(LocalDate.now()) && horaInicio.isBefore(LocalTime.now())) {
+        if (data.isEqual(dataAtual()) && horaInicio.isBefore(horaAtual())) {
             return false;
         }
 
@@ -419,8 +672,8 @@ public class AgendamentoService {
     }
 
     private void validarDataHoraFutura(LocalDate data, LocalTime hora) {
-        LocalDate hoje = LocalDate.now();
-        LocalTime agora = LocalTime.now();
+        LocalDate hoje = dataAtual();
+        LocalTime agora = horaAtual();
 
         if (data.isBefore(hoje)) {
             throw new RuntimeException("Não é possível agendar para uma data passada.");
@@ -489,6 +742,22 @@ public class AgendamentoService {
         throw new RuntimeException("A duração do serviço é inválida.");
     }
 
+    private LocalDateTime obterInicioAgendamento(Agendamento agendamento) {
+        return LocalDateTime.of(
+                agendamento.getData(),
+                agendamento.getHora()
+        );
+    }
+
+    private LocalDateTime obterFimPrevistoAgendamento(Agendamento agendamento) {
+        return obterInicioAgendamento(agendamento)
+                .plusMinutes(converterDuracaoParaMinutos(agendamento.getServico().getDuracao()));
+    }
+
+    private boolean passouDoFimPrevisto(Agendamento agendamento) {
+        return dataHoraAtual().isAfter(obterFimPrevistoAgendamento(agendamento));
+    }
+
     private AgendamentoResponse toResponse(Agendamento agendamento) {
         return new AgendamentoResponse(
                 agendamento.getId(),
@@ -500,7 +769,8 @@ public class AgendamentoService {
                 new ServicoResumoResponse(
                         agendamento.getServico().getId(),
                         agendamento.getServico().getNome(),
-                        agendamento.getServico().getPreco()
+                        agendamento.getServico().getPreco(),
+                        agendamento.getServico().getDuracao()
                 ),
                 agendamento.getData(),
                 agendamento.getHora(),
