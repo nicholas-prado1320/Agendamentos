@@ -10,4 +10,8 @@ export interface ClienteResponse {
   apelido?: string;
   whatsapp: string;
   ativo: boolean;
+  totalAgendamentos: number;
+  totalConcluidos: number;
+  totalCancelados: number;
+  totalNaoCompareceu: number;
 }

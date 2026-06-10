@@ -47,14 +47,36 @@
         <div class="client-name-row">
           <strong>{{ cliente.nomeCompleto }}</strong>
 
-          @if (!cliente.ativo) {
+          <div class="client-stats" aria-label="Resumo de agendamentos da cliente">
+            <span class="stat-pill total" title="Total de agendamentos">
+              <i class="pi pi-calendar"></i>
+              {{ cliente.totalAgendamentos }}
+            </span>
+
+            <span class="stat-pill done" title="Agendamentos concluídos">
+              <i class="pi pi-check-circle"></i>
+              {{ cliente.totalConcluidos }}
+            </span>
+
+            <span class="stat-pill canceled" title="Agendamentos cancelados">
+              <i class="pi pi-times-circle"></i>
+              {{ cliente.totalCancelados }}
+            </span>
+
+            <span class="stat-pill no-show" title="Não compareceu">
+              <i class="pi pi-user-minus"></i>
+              {{ cliente.totalNaoCompareceu }}
+            </span>
+          </div>
+        </div>
+
+        <div class="client-meta-row">
+          @if (cliente.apelido) {
+          <span>{{ cliente.apelido }}</span>
+          } @if (!cliente.ativo) {
           <span class="inactive-pill">Inativa</span>
           }
         </div>
-
-        @if (cliente.apelido) {
-        <span>{{ cliente.apelido }}</span>
-        }
 
         <small>{{ cliente.whatsapp }}</small>
       </div>

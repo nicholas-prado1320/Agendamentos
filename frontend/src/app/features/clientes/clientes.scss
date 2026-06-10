@@ -177,7 +177,7 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
 .clients-list {
   display: grid;
-  gap: clamp(1rem, 2vw, 1.35rem);
+  gap: clamp(0.85rem, 2vw, 1.15rem);
 }
 
 .client-card {
@@ -232,12 +232,6 @@ $page-padding: clamp(1rem, 5vw, 18rem);
     text-overflow: ellipsis;
   }
 
-  span:not(.inactive-pill) {
-    color: $color-copper;
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
   small {
     color: $color-brown-soft;
     font-size: 0.82rem;
@@ -247,17 +241,82 @@ $page-padding: clamp(1rem, 5vw, 18rem);
 
 .client-name-row {
   min-width: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.45rem;
 }
 
+.client-meta-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  span:not(.inactive-pill) {
+    min-width: 0;
+    color: $color-copper;
+    font-size: 0.85rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.client-stats {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+}
+
+.stat-pill {
+  min-width: 1.65rem;
+  min-height: 1.45rem;
+  padding: 0 0.38rem;
+  border: 1px solid rgba(196, 126, 93, 0.12);
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+
+  i {
+    font-size: 0.62rem;
+  }
+
+  &.total {
+    color: #8f5b47;
+    background: #fff3ee;
+  }
+
+  &.done {
+    color: #7c5f3f;
+    background: #f7eadf;
+  }
+
+  &.canceled {
+    color: #a75b5b;
+    background: #fdecec;
+  }
+
+  &.no-show {
+    color: #9b6a38;
+    background: #fff1d6;
+  }
+}
+
 .inactive-pill {
+  width: fit-content;
   flex: 0 0 auto;
   padding: 0.22rem 0.5rem;
   border-radius: 999px;
-  color: #991b1b;
-  background: #fee2e2;
+  color: #a75b5b;
+  background: #fdecec;
   font-size: 0.68rem;
   font-weight: 900;
 }
@@ -373,6 +432,27 @@ $page-padding: clamp(1rem, 5vw, 18rem);
   .client-avatar {
     width: 3.15rem;
     height: 3.15rem;
+  }
+
+  .client-name-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+
+  .client-stats {
+    justify-content: flex-start;
+    gap: 0.24rem;
+  }
+
+  .stat-pill {
+    min-width: 1.52rem;
+    min-height: 1.32rem;
+    padding-inline: 0.32rem;
+    font-size: 0.61rem;
+
+    i {
+      font-size: 0.57rem;
+    }
   }
 
   .client-actions {

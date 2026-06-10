@@ -5,4 +5,8 @@ export interface Cliente {
   whatsapp: string;
   iniciais: string;
   ativo: boolean;
+  totalAgendamentos: number;
+  totalConcluidos: number;
+  totalCancelados: number;
+  totalNaoCompareceu: number;
 }
