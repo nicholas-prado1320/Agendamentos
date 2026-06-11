@@ -8,6 +8,7 @@ public record HorarioAtendimentoResponse(
         DayOfWeek diaSemana,
         LocalTime horaInicio,
         LocalTime horaFim,
-        Boolean ativo
+        Boolean ativo,
+        Boolean atendimento24h
 ) {
 }

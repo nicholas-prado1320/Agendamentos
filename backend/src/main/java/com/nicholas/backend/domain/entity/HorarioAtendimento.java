@@ -30,4 +30,7 @@ public class HorarioAtendimento {
 
     @Column(nullable = false)
     private Boolean ativo;
+
+    @Column(name = "atendimento_24h", nullable = false)
+    private Boolean atendimento24h;
 }

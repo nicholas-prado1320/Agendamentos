@@ -8,7 +8,7 @@ import com.nicholas.backend.dto.response.HorarioAtendimentoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.time.LocalTime;
 import java.time.DayOfWeek;
 import java.util.List;
 
@@ -53,12 +53,14 @@ public class HorarioAtendimentoService {
         List<HorarioAtendimento> horarios = requests.stream()
                 .map((request) -> {
                     boolean ativo = request.ativo() == null || request.ativo();
+                    boolean atendimento24h = ativo && Boolean.TRUE.equals(request.atendimento24h());
 
                     return HorarioAtendimento.builder()
                             .diaSemana(request.diaSemana())
-                            .horaInicio(ativo ? request.horaInicio() : null)
-                            .horaFim(ativo ? request.horaFim() : null)
+                            .horaInicio(obterHoraInicio(request, ativo, atendimento24h))
+                            .horaFim(obterHoraFim(request, ativo, atendimento24h))
                             .ativo(ativo)
+                            .atendimento24h(atendimento24h)
                             .build();
                 })
                 .toList();
@@ -76,6 +78,12 @@ public class HorarioAtendimentoService {
             return;
         }
 
+        boolean atendimento24h = Boolean.TRUE.equals(request.atendimento24h());
+
+        if (atendimento24h) {
+            return;
+        }
+
         if (request.horaInicio() == null) {
             throw new RuntimeException("A hora de início é obrigatória para dias ativos.");
         }
@@ -87,6 +95,38 @@ public class HorarioAtendimentoService {
         if (!request.horaInicio().isBefore(request.horaFim())) {
             throw new RuntimeException("A hora inicial deve ser menor que a hora final.");
         }
+    }
+
+    private LocalTime obterHoraInicio(
+            HorarioAtendimentoRequest request,
+            boolean ativo,
+            boolean atendimento24h
+    ) {
+        if (!ativo) {
+            return null;
+        }
+
+        if (atendimento24h) {
+            return LocalTime.MIN;
+        }
+
+        return request.horaInicio();
+    }
+
+    private LocalTime obterHoraFim(
+            HorarioAtendimentoRequest request,
+            boolean ativo,
+            boolean atendimento24h
+    ) {
+        if (!ativo) {
+            return null;
+        }
+
+        if (atendimento24h) {
+            return LocalTime.of(23, 59);
+        }
+
+        return request.horaFim();
     }
 
     private void validarManicure() {
@@ -101,7 +141,8 @@ public class HorarioAtendimentoService {
                 horario.getDiaSemana(),
                 horario.getHoraInicio(),
                 horario.getHoraFim(),
-                horario.getAtivo()
+                horario.getAtivo(),
+                horario.getAtendimento24h()
         );
     }
 }

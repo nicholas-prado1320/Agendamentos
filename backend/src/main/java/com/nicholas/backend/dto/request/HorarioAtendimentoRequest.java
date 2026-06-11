@@ -13,6 +13,8 @@ public record HorarioAtendimentoRequest(
 
         LocalTime horaFim,
 
-        Boolean ativo
+        Boolean ativo,
+
+        Boolean atendimento24h
 ) {
 }
