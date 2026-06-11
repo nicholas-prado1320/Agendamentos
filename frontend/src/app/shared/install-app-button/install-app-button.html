@@ -1,0 +1,7 @@
+@if (pwaInstallService.podeInstalar()) {
+<button pButton type="button" class="install-app-button" [disabled]="instalando()" (click)="instalar()">
+  <i class="pi pi-download"></i>
+
+  @if (instalando()) { Instalando... } @else { Instalar aplicativo }
+</button>
+}

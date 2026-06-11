@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { PwaInstallService } from './core/service/pwa-install.service';
 
 @Component({
   selector: 'app-root',
@@ -12,4 +13,6 @@ import { ToastModule } from 'primeng/toast';
 })
 export class App {
   protected readonly title = signal('Agendamentos');
+
+  private readonly pwaInstallService = inject(PwaInstallService);
 }
