@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
 import { DividerModule } from 'primeng/divider';
 import { AuthService } from '../../core/service/auth.service';
+import { InstallAppButton } from '../install-app-button/install-app-button';
 
 type DrawerRoute =
   | 'home'
@@ -17,7 +18,7 @@ type DrawerRoute =
 
 @Component({
   selector: 'app-drawer',
-  imports: [DrawerModule, DividerModule],
+  imports: [DrawerModule, DividerModule, InstallAppButton],
   templateUrl: './app-drawer.html',
   styleUrl: './app-drawer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
