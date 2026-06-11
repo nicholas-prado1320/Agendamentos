@@ -5,6 +5,7 @@ import com.nicholas.backend.domain.entity.Cliente;
 import com.nicholas.backend.domain.entity.HorarioAtendimento;
 import com.nicholas.backend.domain.entity.Servico;
 import com.nicholas.backend.domain.entity.StatusAgendamento;
+import com.nicholas.backend.domain.entity.BloqueioAgenda;
 import com.nicholas.backend.domain.repository.AgendamentoRepository;
 import com.nicholas.backend.dto.request.AgendamentoRequest;
 import com.nicholas.backend.dto.response.AgendamentoResponse;
@@ -53,6 +54,7 @@ public class AgendamentoService {
     private final ClienteService clienteService;
     private final ServicoService servicoService;
     private final HorarioAtendimentoService horarioAtendimentoService;
+    private final BloqueioAgendaService bloqueioAgendaService;
 
     private LocalDate dataAtual() {
         return LocalDate.now(ZONE_ID);
@@ -187,25 +189,35 @@ public class AgendamentoService {
                 data.getDayOfWeek()
         );
 
-        LocalTime inicioExpediente = horarioAtendimento.getHoraInicio();
-        LocalTime fimExpediente = horarioAtendimento.getHoraFim();
+        int inicioExpedienteMinutos = toMinutos(horarioAtendimento.getHoraInicio());
+        int fimExpedienteMinutos = Boolean.TRUE.equals(horarioAtendimento.getAtendimento24h())
+                ? 24 * 60
+                : toMinutos(horarioAtendimento.getHoraFim());
 
         List<Agendamento> agendamentosDoDia = agendamentoRepository.findByDataAndStatusInOrderByHoraAsc(
                 data,
                 STATUS_ATIVOS
         );
 
+        List<BloqueioAgenda> bloqueiosDoDia = bloqueioAgendaService.buscarBloqueiosAtivosPorData(data);
+
         List<HorarioDisponivelResponse> horarios = new ArrayList<>();
 
-        LocalTime horarioAtual = inicioExpediente;
+        int horarioAtualMinutos = inicioExpedienteMinutos;
 
-        while (!horarioAtual.plusMinutes(duracaoServico).isAfter(fimExpediente)) {
+        while (horarioAtualMinutos + duracaoServico <= fimExpedienteMinutos) {
+            LocalTime horarioAtual = LocalTime.of(
+                    horarioAtualMinutos / 60,
+                    horarioAtualMinutos % 60
+            );
+
             boolean disponivel = horarioEstaDisponivel(
                     horarioAtual,
                     duracaoServico,
-                    fimExpediente,
+                    fimExpedienteMinutos,
                     data,
-                    agendamentosDoDia
+                    agendamentosDoDia,
+                    bloqueiosDoDia
             );
 
             horarios.add(new HorarioDisponivelResponse(
@@ -213,7 +225,7 @@ public class AgendamentoService {
                     disponivel
             ));
 
-            horarioAtual = horarioAtual.plusMinutes(INTERVALO_GRADE_MINUTOS);
+            horarioAtualMinutos += INTERVALO_GRADE_MINUTOS;
         }
 
         return horarios;
@@ -603,13 +615,15 @@ public class AgendamentoService {
     private boolean horarioEstaDisponivel(
             LocalTime horaInicio,
             int duracaoServico,
-            LocalTime fimExpediente,
+            int fimExpedienteMinutos,
             LocalDate data,
-            List<Agendamento> agendamentosDoDia
+            List<Agendamento> agendamentosDoDia,
+            List<BloqueioAgenda> bloqueiosDoDia
     ) {
-        LocalTime horaFim = horaInicio.plusMinutes(duracaoServico);
+        int inicioMinutos = toMinutos(horaInicio);
+        int fimMinutos = inicioMinutos + duracaoServico;
 
-        if (horaFim.isAfter(fimExpediente)) {
+        if (fimMinutos > fimExpedienteMinutos) {
             return false;
         }
 
@@ -617,11 +631,22 @@ public class AgendamentoService {
             return false;
         }
 
-        return agendamentosDoDia.stream()
-                .noneMatch((agendamento) -> existeConflito(
-                        horaInicio,
-                        horaFim,
+        boolean conflitoAgendamento = agendamentosDoDia.stream()
+                .anyMatch((agendamento) -> existeConflito(
+                        inicioMinutos,
+                        fimMinutos,
                         agendamento
+                ));
+
+        if (conflitoAgendamento) {
+            return false;
+        }
+
+        return bloqueiosDoDia.stream()
+                .noneMatch((bloqueio) -> existeConflitoComBloqueio(
+                        inicioMinutos,
+                        fimMinutos,
+                        bloqueio
                 ));
     }
 
@@ -630,13 +655,15 @@ public class AgendamentoService {
                 request.data().getDayOfWeek()
         );
 
-        LocalTime inicioNovo = request.hora();
+        int inicioNovo = toMinutos(request.hora());
+        int fimNovo = inicioNovo + converterDuracaoParaMinutos(servicoNovo.getDuracao());
 
-        LocalTime fimNovo = inicioNovo.plusMinutes(
-                converterDuracaoParaMinutos(servicoNovo.getDuracao())
-        );
+        int inicioExpediente = toMinutos(horarioAtendimento.getHoraInicio());
+        int fimExpediente = Boolean.TRUE.equals(horarioAtendimento.getAtendimento24h())
+                ? 24 * 60
+                : toMinutos(horarioAtendimento.getHoraFim());
 
-        if (inicioNovo.isBefore(horarioAtendimento.getHoraInicio()) || fimNovo.isAfter(horarioAtendimento.getHoraFim())) {
+        if (inicioNovo < inicioExpediente || fimNovo > fimExpediente) {
             throw new RuntimeException("O horário selecionado está fora do expediente de atendimento.");
         }
 
@@ -645,30 +672,62 @@ public class AgendamentoService {
                 STATUS_ATIVOS
         );
 
-        boolean existeConflito = agendamentosDoDia.stream()
+        boolean existeConflitoAgendamento = agendamentosDoDia.stream()
                 .anyMatch((agendamentoExistente) -> existeConflito(
                         inicioNovo,
                         fimNovo,
                         agendamentoExistente
                 ));
 
-        if (existeConflito) {
+        if (existeConflitoAgendamento) {
             throw new RuntimeException("Já existe um agendamento ativo nesse intervalo de horário.");
+        }
+
+        List<BloqueioAgenda> bloqueiosDoDia = bloqueioAgendaService.buscarBloqueiosAtivosPorData(request.data());
+
+        boolean existeConflitoBloqueio = bloqueiosDoDia.stream()
+                .anyMatch((bloqueio) -> existeConflitoComBloqueio(
+                        inicioNovo,
+                        fimNovo,
+                        bloqueio
+                ));
+
+        if (existeConflitoBloqueio) {
+            throw new RuntimeException("Este horário está bloqueado na agenda.");
         }
     }
 
     private boolean existeConflito(
-            LocalTime novoInicio,
-            LocalTime novoFim,
+            int novoInicio,
+            int novoFim,
             Agendamento agendamentoExistente
     ) {
-        LocalTime inicioExistente = agendamentoExistente.getHora();
+        int inicioExistente = toMinutos(agendamentoExistente.getHora());
 
-        LocalTime fimExistente = inicioExistente.plusMinutes(
-                converterDuracaoParaMinutos(agendamentoExistente.getServico().getDuracao())
+        int fimExistente = inicioExistente + converterDuracaoParaMinutos(
+                agendamentoExistente.getServico().getDuracao()
         );
 
-        return novoInicio.isBefore(fimExistente) && novoFim.isAfter(inicioExistente);
+        return novoInicio < fimExistente && novoFim > inicioExistente;
+    }
+
+    private boolean existeConflitoComBloqueio(
+            int inicioMinutos,
+            int fimMinutos,
+            BloqueioAgenda bloqueio
+    ) {
+        if (Boolean.TRUE.equals(bloqueio.getDiaInteiro())) {
+            return true;
+        }
+
+        int inicioBloqueio = toMinutos(bloqueio.getHoraInicio());
+        int fimBloqueio = toMinutos(bloqueio.getHoraFim());
+
+        return inicioMinutos < fimBloqueio && fimMinutos > inicioBloqueio;
+    }
+
+    private int toMinutos(LocalTime hora) {
+        return hora.getHour() * 60 + hora.getMinute();
     }
 
     private void validarDataHoraFutura(LocalDate data, LocalTime hora) {
