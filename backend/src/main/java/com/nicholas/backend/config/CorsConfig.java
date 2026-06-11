@@ -15,10 +15,9 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "http://localhost:8081",
-                "http://localhost",
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://*.trycloudflare.com",
                 "http://127.0.0.1:4200",
                 "http://127.0.0.1:8081"
         ));
