@@ -5,6 +5,7 @@ export interface HorarioAtendimentoRequest {
     horaInicio: string | null;
     horaFim: string | null;
     ativo: boolean;
+    atendimento24h: boolean;
 }
 
 export interface HorarioAtendimentoResponse {
@@ -13,6 +14,7 @@ export interface HorarioAtendimentoResponse {
     horaInicio: string | null;
     horaFim: string | null;
     ativo: boolean;
+    atendimento24h: boolean;
 }
 
 export interface HorarioAtendimentoConfiguradoResponse {

@@ -26,33 +26,62 @@
 
   <section class="schedule-list">
     @for (horario of horarios(); track horario.diaSemana; let i = $index) {
-    <article class="schedule-card" [class.disabled]="!horario.ativo" (click)="alterarAtivo(i, !horario.ativo)">
+    <article class="schedule-card" [class.disabled]="!horario.ativo">
       <div class="schedule-header">
         <div>
           <strong>{{ horario.label }}</strong>
 
-          @if (horario.ativo) {
-          <span>Atendimento ativo</span>
+          @if (horario.ativo) { @if (horario.atendimento24h) {
+          <span>Atendimento 24h</span>
           } @else {
+          <span>Atendimento ativo</span>
+          } } @else {
           <span>Sem atendimento</span>
           }
         </div>
 
-        <p-checkbox [ngModel]="horario.ativo" [binary]="true" (click)="$event.stopPropagation()" (ngModelChange)="alterarAtivo(i, $event)" />
+        <p-checkbox [ngModel]="horario.ativo" [binary]="true" (ngModelChange)="alterarAtivo(i, $event)" />
       </div>
 
       @if (horario.ativo) {
+      <div class="twenty-four-row">
+        <div>
+          <strong>Atendimento 24h</strong>
+          <span>Libera horários durante todo o dia.</span>
+        </div>
+
+        <p-checkbox [ngModel]="horario.atendimento24h" [binary]="true" (ngModelChange)="alterarAtendimento24h(i, $event)" />
+      </div>
+
       <div class="time-grid">
         <div class="input-group">
           <label>Início</label>
 
-          <p-datepicker [(ngModel)]="horario.horaInicio" [timeOnly]="true" hourFormat="24" placeholder="08:00" (click)="$event.stopPropagation()" class="prime-input-override" />
+          <p-datepicker
+            [ngModel]="horario.horaInicio"
+            [timeOnly]="true"
+            hourFormat="24"
+            placeholder="08:00"
+            appendTo="body"
+            [disabled]="horario.atendimento24h"
+            class="prime-input-override"
+            (ngModelChange)="atualizarHoraInicio(i, $event)"
+          />
         </div>
 
         <div class="input-group">
           <label>Fim</label>
 
-          <p-datepicker [(ngModel)]="horario.horaFim" [timeOnly]="true" hourFormat="24" placeholder="18:00" (click)="$event.stopPropagation()" class="prime-input-override" />
+          <p-datepicker
+            [ngModel]="horario.horaFim"
+            [timeOnly]="true"
+            hourFormat="24"
+            placeholder="18:00"
+            appendTo="body"
+            [disabled]="horario.atendimento24h"
+            class="prime-input-override"
+            (ngModelChange)="atualizarHoraFim(i, $event)"
+          />
         </div>
       </div>
       }
@@ -61,10 +90,96 @@
   </section>
 
   <div class="actions">
-    <button type="button" class="btn-primary" [disabled]="salvando()" (click)="salvar()">
+    <button pButton type="button" class="btn-primary" [disabled]="salvando()" (click)="salvar()">
       <i class="pi pi-save"></i>
 
       @if (salvando()) { Salvando... } @else { Salvar horários }
     </button>
   </div>
+
+  <section class="block-section">
+    <div class="section-title">
+      <div>
+        <h2>Bloqueios de agenda</h2>
+        <p>Use para férias, compromissos ou períodos sem atendimento.</p>
+      </div>
+
+      <i class="pi pi-calendar-times"></i>
+    </div>
+
+    <article class="block-form-card">
+      <p-floatlabel variant="on" class="form-field form-field-full">
+        <input pInputText id="motivo" type="text" [ngModel]="bloqueioForm().motivo" (ngModelChange)="atualizarBloqueioMotivo($event)" />
+        <label for="motivo">Motivo do bloqueio</label>
+      </p-floatlabel>
+
+      <p-floatlabel variant="on" class="form-field">
+        <p-datepicker
+          inputId="dataInicioBloqueio"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          appendTo="body"
+          [ngModel]="bloqueioForm().dataInicio"
+          (ngModelChange)="atualizarBloqueioDataInicio($event)"
+        />
+        <label for="dataInicioBloqueio">Data inicial</label>
+      </p-floatlabel>
+
+      <p-floatlabel variant="on" class="form-field">
+        <p-datepicker inputId="dataFimBloqueio" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body" [ngModel]="bloqueioForm().dataFim" (ngModelChange)="atualizarBloqueioDataFim($event)" />
+        <label for="dataFimBloqueio">Data final</label>
+      </p-floatlabel>
+
+      <div class="full-day-row">
+        <div>
+          <strong>Dia inteiro</strong>
+          <span>Bloqueia todos os horários do período selecionado.</span>
+        </div>
+
+        <p-checkbox [ngModel]="bloqueioForm().diaInteiro" [binary]="true" (ngModelChange)="atualizarBloqueioDiaInteiro($event)" />
+      </div>
+
+      @if (!bloqueioForm().diaInteiro) {
+      <p-floatlabel variant="on" class="form-field">
+        <p-datepicker inputId="horaInicioBloqueio" [timeOnly]="true" hourFormat="24" appendTo="body" [ngModel]="bloqueioForm().horaInicio" (ngModelChange)="atualizarBloqueioHoraInicio($event)" />
+        <label for="horaInicioBloqueio">Hora inicial</label>
+      </p-floatlabel>
+
+      <p-floatlabel variant="on" class="form-field">
+        <p-datepicker inputId="horaFimBloqueio" [timeOnly]="true" hourFormat="24" appendTo="body" [ngModel]="bloqueioForm().horaFim" (ngModelChange)="atualizarBloqueioHoraFim($event)" />
+        <label for="horaFimBloqueio">Hora final</label>
+      </p-floatlabel>
+      }
+
+      <div class="block-actions">
+        <button pButton type="button" label="Criar bloqueio" icon="pi pi-plus" [disabled]="salvandoBloqueio()" (click)="criarBloqueio()"></button>
+      </div>
+    </article>
+
+    <section class="block-list">
+      @for (bloqueio of bloqueios(); track bloqueio.id) {
+      <article class="block-card">
+        <div class="block-card-icon">
+          <i class="pi pi-ban"></i>
+        </div>
+
+        <div class="block-card-info">
+          <strong>{{ bloqueio.motivo }}</strong>
+          <span>{{ formatarPeriodoBloqueio(bloqueio) }}</span>
+          <small>{{ formatarHorarioBloqueio(bloqueio) }}</small>
+        </div>
+
+        <button type="button" class="block-remove" aria-label="Remover bloqueio" (click)="excluirBloqueio(bloqueio.id)">
+          <i class="pi pi-trash"></i>
+        </button>
+      </article>
+      } @empty {
+      <div class="block-empty">
+        <i class="pi pi-calendar"></i>
+        <p>Nenhum bloqueio cadastrado.</p>
+        <span>Os períodos indisponíveis aparecerão aqui.</span>
+      </div>
+      }
+    </section>
+  </section>
 </main>
