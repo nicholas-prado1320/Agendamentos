@@ -71,15 +71,6 @@
 
       <button pButton type="submit" label="Cadastrar" [loading]="carregando()" [disabled]="carregando()"></button>
 
-      <p-divider align="center">
-        <span class="divider-text">ou</span>
-      </p-divider>
-
-      <button pButton type="button" severity="secondary" class="google-button" [outlined]="true" [disabled]="carregando()" (click)="cadastrarComGoogle()">
-        <span class="google-icon" aria-hidden="true">G</span>
-        <span>Cadastrar com Google</span>
-      </button>
-
       <div class="link-row">
         <span>Já tem uma conta?</span>
         <button type="button" (click)="irParaLogin()">Entrar</button>
