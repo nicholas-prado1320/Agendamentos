@@ -27,6 +27,18 @@ backend/src/main/resources/application-local.properties
 .env.*
 !.env.example
 
+# Secrets
+client_secret*.json
+*.pem
+*.key
+*.p12
+*.jks
+
+# Backend secrets
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-dev-secret.properties
+backend/src/main/resources/application-prod-secret.properties
+
 # IDEs and editors
 .idea/
 .project
