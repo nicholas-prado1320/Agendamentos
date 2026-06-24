@@ -1,5 +1,10 @@
 @use '../../../styles/tokens' as *;
 
+.install-app-wrapper {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .install-app-button {
   width: 100%;
   min-height: 2.85rem;
@@ -24,5 +29,42 @@
     opacity: 0.65;
     cursor: not-allowed;
     box-shadow: none;
+  }
+}
+
+.ios-install-help {
+  padding: 0.85rem;
+  border: 1px solid rgba(196, 126, 93, 0.16);
+  border-radius: 1rem;
+  color: #6b4434;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 22px rgba(166, 110, 82, 0.08);
+
+  strong {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: #33211a;
+    font-size: 0.86rem;
+    font-weight: 900;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 1.15rem;
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  li {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  span {
+    display: block;
+    margin-top: 0.55rem;
+    color: #9c6f5e;
+    font-size: 0.74rem;
+    line-height: 1.35;
   }
 }

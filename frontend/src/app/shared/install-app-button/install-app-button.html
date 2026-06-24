@@ -1,7 +1,24 @@
-@if (pwaInstallService.podeInstalar()) {
-<button pButton type="button" class="install-app-button" [disabled]="instalando()" (click)="instalar()">
-  <i class="pi pi-download"></i>
+@if (pwaInstallService.deveMostrarBotao()) {
+<div class="install-app-wrapper">
+  <button pButton type="button" class="install-app-button" [disabled]="instalando()" (click)="acionar()">
+    <i [class]="iconeBotao()"></i>
 
-  @if (instalando()) { Instalando... } @else { Instalar aplicativo }
-</button>
+    @if (instalando()) { Instalando... } @else { {{ labelBotao() }} }
+  </button>
+
+  @if (mostrarInstrucoesIos()) {
+  <div class="ios-install-help">
+    <strong>Instalar no iPhone</strong>
+
+    <ol>
+      <li>Abra este site no Safari.</li>
+      <li>Toque no botão de compartilhar.</li>
+      <li>Escolha “Adicionar à Tela de Início”.</li>
+      <li>Toque em “Adicionar”.</li>
+    </ol>
+
+    <span>Depois disso, o ícone do Peony Beauty aparecerá na tela inicial.</span>
+  </div>
+  }
+</div>
 }
