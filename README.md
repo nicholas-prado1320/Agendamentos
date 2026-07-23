@@ -1,59 +1,146 @@
-# Agendamentos
+# Peony Beauty
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.8.
+Sistema web/PWA para gestão de agendamentos em salão de beleza, desenvolvido com foco em responsividade, experiência mobile first, autenticação segura e organização da rotina de atendimento.
 
-## Development server
+O projeto permite que clientes realizem agendamentos de serviços e que a profissional responsável gerencie clientes, serviços, horários de atendimento, bloqueios de agenda, status dos atendimentos, pendências e histórico.
 
-To start a local development server, run:
+> Projeto em desenvolvimento, utilizado como case full stack com preparação para ambiente de produção.
 
-```bash
-ng serve
-```
+---
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Funcionalidades
 
-## Code scaffolding
+### Autenticação e usuários
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Cadastro de usuários
+- Login com e-mail e senha
+- Login com Google OAuth
+- Validação de e-mail por código
+- Reenvio de código de validação
+- Recuperação de senha
+- Alteração de senha autenticada
+- Controle de perfis de acesso:
+  - Cliente
+  - Manicure
 
-```bash
-ng generate component component-name
-```
+### Gestão de clientes
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Cadastro de clientes
+- Edição de dados do cliente
+- Consulta de clientes cadastrados
+- Vínculo entre usuário e cliente
+- Controle de clientes ativos
 
-```bash
-ng generate --help
-```
+### Gestão de serviços
 
-## Building
+- Cadastro de serviços
+- Edição de serviços
+- Controle de preço
+- Controle de duração do serviço
+- Ativação e inativação de serviços
 
-To build the project run:
+### Gestão de horários
 
-```bash
-ng build
-```
+- Cadastro de horários de atendimento
+- Configuração por dia da semana
+- Atendimento 24h
+- Validação de disponibilidade conforme duração do serviço
+- Bloqueios de agenda por período
+- Bloqueios de dia inteiro ou por horário específico
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Agendamentos
 
-## Running unit tests
+- Criação de agendamentos pelo cliente
+- Criação de agendamentos pela manicure
+- Listagem de agendamentos do dia
+- Histórico de agendamentos
+- Cancelamento de agendamentos
+- Controle de status:
+  - Agendado
+  - Em atendimento
+  - Concluído
+  - Cancelado
+  - Não compareceu
+- Detecção de pendências de atendimentos passados
+- Filtros por status, data, cliente e serviço
+- Paginação de resultados
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### PWA
 
-```bash
-ng test
-```
+- Instalação como aplicativo no celular
+- Suporte a Android
+- Instrução personalizada para instalação no iPhone
+- Service Worker
+- Manifest configurado
+- Experiência mobile first
 
-## Running end-to-end tests
+### Segurança
 
-For end-to-end (e2e) testing, run:
+- Autenticação com JWT
+- Proteção de rotas no frontend
+- Proteção de endpoints no backend
+- Controle de autorização por perfil
+- Validação de permissões no backend
+- CORS configurável por ambiente
+- Variáveis sensíveis fora do código-fonte
+- Separação entre ambiente de desenvolvimento e produção
 
-```bash
-ng e2e
-```
+---
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Tecnologias utilizadas
 
-## Additional Resources
+### Frontend
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Angular
+- TypeScript
+- PrimeNG
+- SCSS
+- Angular PWA
+- Service Worker
+- Google OAuth
+
+### Backend
+
+- Java
+- Spring Boot
+- Spring Security
+- JWT
+- Spring Data JPA
+- Bean Validation
+- API REST
+
+### Banco de dados
+
+- PostgreSQL
+
+### Infraestrutura e ferramentas
+
+- Docker
+- Docker Compose
+- Nginx
+- Cloudflare Tunnel para testes externos
+- Postman
+- DBeaver
+- Git e GitHub
+
+---
+
+## Arquitetura do projeto
+
+```txt
+Agendamentos
+├── backend
+│   ├── src
+│   ├── Dockerfile
+│   └── pom.xml
+│
+├── frontend
+│   ├── src
+│   ├── public
+│   ├── Dockerfile
+│   └── package.json
+│
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── .env.example
+└── README.md
